@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: cafe-vesuvias
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./public:/app/public
+      - ./database:/app/database
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

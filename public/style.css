@@ -1,0 +1,315 @@
+/*#region Main*/
+
+:root {
+    --header: transparent;
+    --border: #353535;
+    --body-background: #fafafa;
+    --card-background: #232121;
+    --text: #ffffff;
+    --text-inverted: #000000;
+    --text-gray: #b9b9b9;
+    --text-gray-inverted: #414141;
+    --image-background: #a67b5b;
+}
+
+body {
+    margin: 0%;
+    padding: 0%;
+    background-color: var(--body-background);
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-bottom: solid var(--border);
+    background-color: var(--header);
+    position: relative;
+    height: 7vh;
+}
+
+.header-text {
+    color: var(--text);
+    font-weight: bold;
+    font-size: 5vh;
+    margin: 0;
+}
+
+.header-container div {
+    position: absolute;
+    color: var(--text);
+    right: 2vw;
+    font-size: 2vh;
+}
+
+.header-container a {
+    padding: 1vw;
+}
+
+h1 {
+    text-align: center;
+    padding: 0%;
+    margin-top: 0%;
+}
+
+.top-container {
+    position: relative;
+    height: 65vh;
+    width: 100%;
+    background-color: var(--image-background);
+    z-index: -2;
+}
+
+.cover-image {
+    text-align: center;
+    display: block;
+    margin: 0 auto;
+    position: fixed;
+    left: 50%;
+    top: 7.5%;
+    transform: translateX(-50%);
+    z-index: -1;
+    height: 38vh;
+}
+
+.cover-shape {
+    text-align: center;
+    display: block;
+    margin: 0 auto;
+    position: absolute;
+    bottom: 0;
+}
+
+/*#endregion Main*/
+
+.content-container-background {
+    width: 100%;
+    background-color: var(--body-background);
+    position: relative;
+    z-index: 0;
+}
+
+
+.content-container {
+    width: 100%;
+    background-color: var(--body-background);
+    position: relative;
+    z-index: 0;
+}
+
+/*#region Menu*/
+
+.menu-header {
+    font-size: 8vh;
+    height: 8vh;
+    color: var(--image-background);
+}
+
+.menu-sub-header {
+    text-align: center;
+    font-size: 8vh;
+    height: 8vh;
+    color: var(--image-background);
+    border-bottom-style: solid;
+    border-color: var(--border);
+    margin-bottom: 5%;
+}
+
+.menu-sub-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-sub-header-container h2 {
+    font-size: 8vh;
+}
+
+.menu-container {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+.menu-column {
+    width: 100%;
+    height: 100%;
+}
+
+.bubbles-image {
+    width: 8vh;
+    margin-bottom: 15px;
+}
+
+.knife-fork-image {
+    width: 6vh;
+    margin-bottom: 15px;
+}
+
+.menu-item {
+    /*border-style: solid;
+    border-color: var(--border);*/
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 5%;
+}
+
+h2 {
+    margin: 0;
+    color: var(--image-background);
+}
+
+h3 {
+    margin: 0;
+}
+
+h4 {
+    margin: 0;
+    color: var(--text-gray-inverted);
+}
+
+.menu-seperator {
+    padding: 0.125%;
+    margin-top: 8vh;
+    background-color: var(--border);
+}
+
+/*#endregion Menu*/
+
+/*#region Animations*/
+
+@keyframes cover-image-load-drop {
+    0% {
+        top: -35%;
+        opacity: 0;
+    }
+
+    100% {
+        top: 7.5%;
+        opacity: 100;
+    }
+}
+
+@keyframes header-fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 100;
+    }
+}
+
+.cover-image-load-drop-animation {
+    animation: 1.75s cover-image-load-drop;
+}
+
+.header-fade-in-animation {
+    animation: 2.75s header-fade-in;
+}
+
+/*#endregion Animations*/
+
+/*#region Media Queries*/
+
+@media (max-width: 800px) or (resolution > 200dpi) {
+    .menu-container {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 600px) or (resolution > 300dpi) {
+    .menu-container {
+        flex-direction: column;
+    }
+}
+
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --header: #808080;
+        --border: #b2b2b2;
+        --body-background: #FFFFFF;
+        --card-background: #f0f8ff;
+        --text: #000000;
+    }
+}
+
+/*#endregion Media Queries*/
+
+/* Booking Form Styling */
+/* Booking Form Styling */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 35vw;
+    background: rgba(255, 255, 255, 0.35); /* more transparent for blur effect */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Safari support */
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.wrapper .header1 {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: var(--body-background);
+    margin-bottom: 1rem;
+}
+
+.wrapper label {
+    font-weight: bold;
+    font-size: 1rem;
+    color: var(--image-background);
+}
+
+.wrapper input, 
+.wrapper select {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    font-size: 1rem;
+    background-color: rgba(255, 255, 255, 0.7);
+    box-sizing: border-box;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.wrapper input:focus, 
+.wrapper select:focus {
+    border-color: var(--image-background);
+    background-color: rgba(255, 255, 255, 0.9);
+    outline: none;
+}
+
+.booking-button {
+    background-color: var(--image-background);
+    color: white;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: fit-content;
+    align-self: center;
+    transition: background-color 0.3s;
+}
+
+.booking-button:hover {
+    background-color: #8b6147;
+}
+
