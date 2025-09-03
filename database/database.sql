@@ -1,22 +1,22 @@
 CREATE TABLE tables (
     id INTEGER PRIMARY KEY,
-    table_number NOT NULL INTEGER
+    table_number INTEGER NOT NULL
 );
 
 CREATE TABLE reservations (
     id INTEGER PRIMARY KEY,
-    customer_id NOT NULL INTEGER,
-    table_id NOT NULL INTEGER,
-    time NOT NULL DATETIME,
+    customer_id INTEGER NOT NULL,
+    table_id INTEGER NOT NULL,
+    time DATETIME NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES online_customers(id),
     FOREIGN KEY (table_id) REFERENCES tables(id)
 );
 
 CREATE TABLE menu_items (
     id INTEGER PRIMARY KEY,
-    name NOT NULL TEXT,
-    category_id NOT NULL INTEGER,
-    description_danish NOT NULL TEXT,
+    name TEXT NOT NULL,
+    category_id INTEGER NOT NULL,
+    description_danish TEXT NOT NULL,
     description_english TEXT,
     price REAL NOT NULL CHECK (price >= 0),
     FOREIGN KEY (category_id) REFERENCES categories(id)
@@ -24,21 +24,22 @@ CREATE TABLE menu_items (
 
 CREATE TABLE categories (
     id INTEGER PRIMARY KEY,
-    name NOT NULL VARCHAR(30)
+    name VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE ingredients (
     id INTEGER PRIMARY KEY,
-    name NOT NULL TEXT
+    name TEXT NOT NULL
 );
 
 CREATE TABLE item_ingredients (
     id INTEGER PRIMARY KEY,
-    item_id NOT NULL INTEGER,
-    ingredient_id NOT NULL INTEGER,
+    item_id INTEGER NOT NULL,
+    ingredient_id INTEGER NOT NULL,
     FOREIGN KEY (item_id) REFERENCES menu_items(id),
     FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
+
 
 INSERT INTO categories (id, name) VALUES
 (1, 'Food'),
