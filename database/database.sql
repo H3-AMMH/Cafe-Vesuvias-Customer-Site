@@ -1,73 +1,142 @@
 CREATE TABLE tables (
     id INTEGER PRIMARY KEY,
-    table_number INTEGER
+    table_number NOT NULL INTEGER
 );
 
 CREATE TABLE reservations (
     id INTEGER PRIMARY KEY,
-    customer_id INTEGER,
-    table_id INTEGER,
-    time DATETIME,
+    customer_id NOT NULL INTEGER,
+    table_id NOT NULL INTEGER,
+    time NOT NULL DATETIME,
     FOREIGN KEY (customer_id) REFERENCES online_customers(id),
     FOREIGN KEY (table_id) REFERENCES tables(id)
 );
 
 CREATE TABLE menu_items (
     id INTEGER PRIMARY KEY,
-    name TEXT,
-    category_id INTEGER,
-    description_danish TEXT,
+    name NOT NULL TEXT,
+    category_id NOT NULL INTEGER,
+    description_danish NOT NULL TEXT,
     description_english TEXT,
-    price DECIMAL(10,2),
+    price REAL NOT NULL CHECK (price >= 0),
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
 CREATE TABLE categories (
     id INTEGER PRIMARY KEY,
-    name VARCHAR(30)
+    name NOT NULL VARCHAR(30)
 );
 
 CREATE TABLE ingredients (
     id INTEGER PRIMARY KEY,
-    name TEXT
+    name NOT NULL TEXT
 );
 
 CREATE TABLE item_ingredients (
     id INTEGER PRIMARY KEY,
-    item_id INTEGER,
-    ingredient_id INTEGER,
+    item_id NOT NULL INTEGER,
+    ingredient_id NOT NULL INTEGER,
     FOREIGN KEY (item_id) REFERENCES menu_items(id),
     FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
 
-INSERT INTO categories (name) VALUES
-('Drikkevarer'),
-('Retter');
+INSERT INTO categories (id, name) VALUES
+(1, 'Food'),
+(2, 'Drinks');
 
-INSERT INTO menu_items (name, category_id, description_danish, description_english, price) VALUES
-('Espresso', 1, 'En stærk og koncentreret kaffe', 'A strong and concentrated coffee', 20.00),
-('Cappuccino', 1, 'Espresso med skumfidus og mælk', 'Espresso with marshmallow and milk', 30.00),
-('Latte', 1, 'Espresso med meget mælk', 'Espresso with a lot of milk', 35.00),
-('Americano', 1, 'Espresso med varmt vand', 'Espresso with hot water', 25.00),
-('Te', 1, 'Sort te med citron', 'Black tea with lemon', 15.00),
-('Soda', 1, 'Kold sodavand', 'Cold soda', 10.00),
-('Juice', 1, 'Friskpresset juice', 'Freshly squeezed juice', 15.00),
-('Vand', 1, 'Koldt vand', 'Cold water', 5.00),
-('Chokolade', 1, 'Varme chokolade med flødeskum', 'Hot chocolate with whipped cream', 25.00),
-('Iskaffe', 1, 'Kold kaffe med isterninger', 'Cold coffee with ice cubes', 30.00),
-('Smoothie', 1, 'Frugt smoothie med yoghurt', 'Fruit smoothie with yogurt', 35.00),
+INSERT INTO menu_items (id, name, category_id, description_danish, description_english, price) VALUES
+-- Food
+(1, 'Nachos Supreme', 1, 
+ 'Varme tortillachips med crispy kylling, jalapeños, gratineret med ost, serveres med salsa, guacamole og creme fraiche',
+ 'Warm tortilla chips with crispy chicken, jalapeños, melted cheese, served with salsa, guacamole and sour cream', 
+ 129.00),
+(2, 'Cæsar Salat', 1, 
+ 'Stegt kyllingebryst, hjertesalat vendt med cæsardressing, parmesanflager og croutoner.',
+ 'Grilled chicken breast, romaine lettuce tossed with Caesar dressing, parmesan flakes and croutons.', 
+ 139.00),
+(3, 'Tigerrejesalat', 1,
+ 'Stegte tigerrejer med kålsalat, avocado, nudler, agurk, gulerod, edamame bønner, mynte, cashewnødder og gomadressing',
+ 'Grilled tiger prawns with cabbage salad, avocado, noodles, cucumber, carrot, edamame beans, mint, cashews and goma dressing', 
+ 139.00),
+(4, 'Vegetar Salat', 1,
+ 'Sweet potato, falafel, babyspinat, granatæble, bulgur, feta, tomater, edamame bønner, hjemmelavet basilikumpesto, græskarkerner og mynte',
+ 'Sweet potato, falafel, baby spinach, pomegranate, bulgur, feta, tomatoes, edamame beans, homemade basil pesto, pumpkin seeds and mint', 
+ 119.00),
+(5, 'Club Sandwich', 1,
+ 'Stegt kyllingebryst, sprød bacon, karrymayonnaise, tomat og salat. Serveres med pommes frites og mayonnaise',
+ 'Grilled chicken breast, crispy bacon, curry mayonnaise, tomato and lettuce. Served with French fries and mayonnaise', 
+ 139.00),
+(6, 'Laksesandwich', 1,
+ 'Sandwich med røget laks, hjemmelavet basilikumspesto, salat, avocado og syltet rødløg. Serveres med pommes frites og mayonnaise',
+ 'Sandwich with smoked salmon, homemade basil pesto, lettuce, avocado and pickled red onion. Served with French fries and mayonnaise', 
+ 149.00),
+(7, 'Spicy Steak Sandwich', 1,
+ 'Sandwich med oksestrimler, salat, guacamole, jalapeños, syltede rødløg og spicy chilimayonnaise. Serveres med pommes frites og chilimayonnaise.',
+ 'Sandwich with beef strips, lettuce, guacamole, jalapeños, pickled red onion and spicy chili mayonnaise. Served with French fries and chili mayonnaise', 
+ 149.00),
+(8, 'Tunsandwich', 1,
+ 'Sandwich med tunmoussé, salat, avocado, syltede rødløg og hjemmelavet basilikumpesto. Serveres med pommes frites og mayonnaise.',
+ 'Sandwich with tuna mousse, lettuce, avocado, pickled red onion and homemade basil pesto. Served with French fries and mayonnaise', 
+ 139.00),
+(9, 'Vesuvius Burger', 1,
+ 'Bøf af hakket oksekød i briochebolle med salat, pickles, tomat, syltede rødløg og burgerdressing. Serveres med pommes frites og mayonnaise.',
+ 'Beef patty in brioche bun with lettuce, pickles, tomato, pickled red onion and burger dressing. Served with French fries and mayonnaise', 
+ 149.00),
+(10, 'Spicy Burger', 1,
+ 'Bøf af hakket oksekød i briochebolle med salat, tomat, jalapeños, syltede rødløg og chilimayonnaise. Serveres med pommes frites og chilimayonnaise',
+ 'Beef patty in brioche bun with lettuce, tomato, jalapeños, pickled red onion and chili mayonnaise. Served with French fries and chili mayonnaise', 
+ 149.00),
+(11, 'Crispy Chicken Burger', 1,
+ 'Sprød kylling i briochebolle med salat, tomat, syltede rødløg, chilimayonnaise, jalapeños og guacamole. Serveres med pommes frites og mayonnaise',
+ 'Crispy chicken in brioche bun with lettuce, tomato, pickled red onion, chili mayonnaise, jalapeños and guacamole. Served with French fries and mayonnaise', 
+ 149.00),
+(12, 'Tomatsuppe', 1,
+ 'Tomatsuppe med creme fraiche og frisk basilikum. Serveres med brød og smør',
+ 'Tomato soup with sour cream and fresh basil. Served with bread and butter', 
+ 99.00),
+(13, 'Pasta med Kylling', 1,
+ 'Pasta med kylling, blandede svampe og parmesan.',
+ 'Pasta with chicken, mixed mushrooms and parmesan.', 
+ 169.00),
+(14, 'Pasta med Oksemørbrad', 1,
+ 'Pasta med grilllet oksemørbrad, blandede svampe og parmesan.',
+ 'Pasta with grilled beef tenderloin, mixed mushrooms and parmesan.', 
+ 179.00),
+(15, 'Pasta med Tigerrejer', 1,
+ 'Pasta med tigerrejer, tomatsauce, parmesan og basilikum',
+ 'Pasta with tiger prawns, tomato sauce, parmesan and basil', 
+ 179.00),
 
-('Kage', 2, 'Hjemmelavet chokolade kage', 'Homemade chocolate cake', 40.00),
-('Sandwich', 2, 'Frisklavet sandwich med skinke og ost', 'Freshly made sandwich with ham and cheese', 50.00),
-('Salat', 2, 'Grøn salat med dressing', 'Green salad with dressing', 30.00),
-('Bagel', 2, 'Frisk bagel med cream cheese', 'Fresh bagel with cream cheese', 20.00),
-('Croissant', 2, 'Lækker smør croissant', 'Delicious butter croissant', 15.00),
-('Muffin', 2, 'Blød og saftig muffin', 'Soft and juicy muffin', 20.00),
-('Brownie', 2, 'Chokolade brownie med nødder', 'Chocolate brownie with nuts', 25.00),
-('Pasta', 2, 'Pasta med tomatsauce og parmesan', 'Pasta with tomato sauce and parmesan', 60.00),
-('Pizza', 2, 'Pizza med pepperoni og ost', 'Pizza with pepperoni and cheese', 70.00),
-('Burger', 2, 'Saftig burger med pomfritter', 'Juicy burger with fries', 80.00),
-('Hotdog', 2, 'Klassisk hotdog med sennep og ketchup', 'Classic hotdog with mustard and ketchup', 40.00),
-('Nachos', 2, 'Nachos med ost og salsa', 'Nachos with cheese and salsa', 50.00),
-('Chili con Carne', 2, 'Krydret chili con carne med ris', 'Spicy chili con carne with rice', 65.00),
-('Sushi', 2, 'Frisk sushi med laks og avocado', 'Fresh sushi with salmon and avocado', 90.00);
+-- Drinks
+(16, 'Aperol Spritz', 2,
+ 'Aperol, prosecco, danskvand, appelsinskive. Klassiskeren til en varm sommerdag. Eller bare fordi...',
+ 'Aperol, prosecco, soda water, orange slice. A classic for a hot summer day—or just because...', 
+ 85.00),
+(17, 'Espresso Martini', 2,
+ 'Vodka/tequila, kahlua, espresso, vanilje. En klassiker med et twist, vælg mellem vodka eller tequila.',
+ 'Vodka/tequila, kahlua, espresso, vanilla. A classic with a twist—choose between vodka or tequila.', 
+ 85.00),
+(18, 'Dark n Stormy', 2,
+ 'Mørk rom, gingerbeer, friskpresset limesat og gomme sirup.',
+ 'Dark rum, ginger beer, fresh lime juice and gomme syrup.', 
+ 85.00),
+(19, 'Mojito', 2,
+ 'Rom, mynte, rørsukker, friskpresset limesaft, limeskiver.',
+ 'Rum, mint, cane sugar, fresh lime juice, lime slices.', 
+ 85.00),
+(20, 'Gin Tonic', 2,
+ 'Gin, tonic, citronskive.',
+ 'Gin, tonic, lemon slice.', 
+ 85.00),
+(21, 'Moscow Mule', 2,
+ 'Vodka, friskpresset limesaft, gingerbeer.',
+ 'Vodka, fresh lime juice, ginger beer.', 
+ 85.00),
+(22, 'Strawberry Daquiri', 2,
+ 'Lys rom, jordbær, friskpresset lime, gomme sirup.',
+ 'Light rum, strawberries, fresh lime juice, gomme syrup.', 
+ 85.00),
+(23, 'Gin Hass', 2,
+ 'Gin, mangojuice, frisk lime og lemon.',
+ 'Gin, mango juice, fresh lime and lemon soda.', 
+ 85.00);
