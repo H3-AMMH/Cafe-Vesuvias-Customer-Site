@@ -1,23 +1,15 @@
-# Use official Node.js Alpine image
-FROM node:20-alpine
+FROM node:20
 
-# Set working directory
 WORKDIR /app
 
-# Install build tools and sqlite
-RUN apk add --no-cache make g++ python3 sqlite
-
-# Copy package files first for caching
+# Copy package files first
 COPY package*.json ./
 
-# Install dependencies, but build sqlite3 from source for Alpine
+# Install dependencies (prebuilt sqlite3 binaries usually just work here)
 RUN npm install
 
-# Copy the rest of the application
+# Copy source
 COPY . .
 
-# Expose port (adjust if needed)
 EXPOSE 3000
-
-# Start the app
 CMD ["node", "index.js"]

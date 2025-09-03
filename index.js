@@ -2,7 +2,7 @@ const port = 3000;
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const sqlite = require('sqlite3');
+const sqlite3 = require('sqlite3');
 
 const app = express();
 const PORT = 3000;
@@ -13,10 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static(__dirname + '/public'));
 
-// Explicitly serve index.js from root
-app.get('/index.js', (req, res) => {
-  res.sendFile(__dirname + '/index.js');
-});
+// // Explicitly serve index.js from root
+// app.get('/index.js', (req, res) => {
+//   res.sendFile(__dirname + '/index.js');
+// });
+
+
 // Paths
 const dbPath = path.join(__dirname, "database", "database.sqlite");
 const schemaPath = path.join(__dirname, "database", "database.sql");
@@ -33,7 +35,7 @@ if (!fs.existsSync(dbPath)) {
 };
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
 const htmlPath = path.join(__dirname, './index.html');
@@ -55,7 +57,8 @@ app.get('/', (req, res) => {
       </div>
     `).join('');
 
-    fs.readFile(path.join(__dirname, htmlPath), 'utf8', (err, html) => {
+    const htmlPath = path.join(__dirname, 'public', 'index.html');
+    fs.readFile(htmlPath, 'utf8', (err, html) => {
       if (err) return res.status(500).send('Template error');
 
       html = html.replace(
