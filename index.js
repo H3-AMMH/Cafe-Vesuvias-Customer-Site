@@ -1,52 +1,8 @@
-/*const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
-
-const app = express();
-const PORT = 3000;
-
-// Paths
-const dbPath = path.join(__dirname, "database", "database.sqlite");
-const schemaPath = path.join(__dirname, "database", "database.sql");
-
-// Ensure database exists
-if (!fs.existsSync(dbPath)) {
-    console.log("Database not found. Creating from database.sql...");
-    const initDb = new sqlite3.Database(dbPath);
-    const schema = fs.readFileSync(schemaPath, "utf8");
-    initDb.exec(schema, (err) => {
-        if (err) console.error("Error creating database:", err);
-        else console.log("Database created successfully.");
-    });
-    initDb.close();
-}
-
-// Connect to the database
-const db = new sqlite3.Database(dbPath);
-
-// Serve static files
-app.use(express.static(path.join(__dirname, "public")));
-
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
-
-db.all('SELECT * FROM menu_items;', [], (err, rows) => {
-  if (err) throw err;
-  rows.forEach(row => {
-    console.log(row);
-  });
-});
-
-// close
-db.close();
-*/
 const port = 3000;
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
+const sqlite = require('sqlite3');
 
 const app = express();
 const PORT = 3000;
@@ -55,7 +11,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname + '/public'));
+
+// Explicitly serve index.js from root
+app.get('/index.js', (req, res) => {
+  res.sendFile(__dirname + '/index.js');
+});
 // Paths
 const dbPath = path.join(__dirname, "database", "database.sqlite");
 const schemaPath = path.join(__dirname, "database", "database.sql");
@@ -75,7 +36,7 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-const htmlPath = path.join(__dirname, './public/index.html');
+const htmlPath = path.join(__dirname, './index.html');
 
 app.get('/', (req, res) => {
   const db = new sqlite3.Database(dbPath);
