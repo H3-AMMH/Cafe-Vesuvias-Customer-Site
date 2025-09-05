@@ -27,3 +27,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Failed to load menu:", err);
   }
 });
+
+async function removeItem(id) {
+  const res = await fetch(`/api/menu/1`, {
+    method: 'DELETE'
+  });
+  //${id}
+  if (res.ok) {
+    await fetch("/api/menu/");
+  } else {
+    console.error("Failed to delete item:", await res.text());
+  }
+};
+
+async function addItem(name, category_id, description_danish, description_english, price) {
+  const res = await fetch('/api/menu', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, category_id, description_danish, description_english, price })
+  });
+  if (res.ok) {
+    await fetch("/api/menu/");
+  } else {
+    console.error("Failed to add item:", await res.text());
+  }
+};
+
+async function updateItem(name, category_id, description_danish, description_english, price, id) {
+  const res = await fetch(`/api/menu/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, category_id, description_danish, description_english, price })
+  });
+  if (res.ok) {
+    await fetch("/api/menu/");
+  } else {
+    console.error("Failed to update item:", await res.text());
+  }
+};
