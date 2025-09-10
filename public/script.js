@@ -28,8 +28,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// MENU SYSTEM
+
 async function removeItem(id) {
-  const res = await fetch(`/api/menu/1`, {
+  const res = await fetch(`/api/menu/${id}`, {
     method: 'DELETE'
   });
   //${id}
@@ -60,7 +62,47 @@ async function updateItem(name, category_id, description_danish, description_eng
     body: JSON.stringify({ name, category_id, description_danish, description_english, price })
   });
   if (res.ok) {
-    await fetch("/api/menu/");
+    await fetch("/api/reservation/");
+  } else {
+    console.error("Failed to update item:", await res.text());
+  }
+};
+
+// RESERVATION SYSTEM
+
+async function removeReservation(id) {
+  const res = await fetch(`/api/reservation/${id}`, {
+    method: 'DELETE'
+  });
+  //${id}
+  if (res.ok) {
+    await fetch("/api/reservation/");
+  } else {
+    console.error("Failed to delete item:", await res.text());
+  }
+};
+
+async function addReservation(customer_id, table_id, time) {
+  const res = await fetch('/api/reservation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({customer_id, table_id, time})
+  });
+  if (res.ok) {
+    await fetch("/api/reservation/");
+  } else {
+    console.error("Failed to add item:", await res.text());
+  }
+};
+
+async function updateReservation(customer_id, table_id, time, id) {
+  const res = await fetch(`/api/reservation/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({customer_id, table_id, time})
+  });
+  if (res.ok) {
+    await fetch("/api/reservation/");
   } else {
     console.error("Failed to update item:", await res.text());
   }

@@ -1,18 +1,35 @@
-CREATE TABLE tables (
+CREATE TABLE IF NOT EXISTS orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reservation_id INTEGER NOT NULL,
+  status TEXT DEFAULT 'open',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(reservation_id) REFERENCES reservations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS order_lines (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id INTEGER NOT NULL,
+  menu_item_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL CHECK(quantity > 0),
+  unit_price REAL NOT NULL CHECK(unit_price > 0),
+  FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
+);
+
+CREATE TABLE IF NOT EXISTS tables (
     id INTEGER PRIMARY KEY,
     table_number INTEGER NOT NULL
 );
 
-CREATE TABLE reservations (
+CREATE TABLE IF NOT EXISTS reservations (
     id INTEGER PRIMARY KEY,
     customer_id INTEGER NOT NULL,
     table_id INTEGER NOT NULL,
     time DATETIME NOT NULL,
-    FOREIGN KEY (customer_id) REFERENCES online_customers(id),
     FOREIGN KEY (table_id) REFERENCES tables(id)
 );
 
-CREATE TABLE menu_items (
+CREATE TABLE IF NOT EXISTS menu_items (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     category_id INTEGER NOT NULL,
@@ -22,17 +39,17 @@ CREATE TABLE menu_items (
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY,
     name VARCHAR(30) NOT NULL
 );
 
-CREATE TABLE ingredients (
+CREATE TABLE IF NOT EXISTS ingredients (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL
 );
 
-CREATE TABLE item_ingredients (
+CREATE TABLE IF NOT EXISTS item_ingredients (
     id INTEGER PRIMARY KEY,
     item_id INTEGER NOT NULL,
     ingredient_id INTEGER NOT NULL,
@@ -40,6 +57,21 @@ CREATE TABLE item_ingredients (
     FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
 
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    first_name varchar(50) NOT NULL,
+    last_name varchar(50) NOT NULL,
+    user_role varchar(20) NOT NULL,
+    email varchar(100) NOT NULL UNIQUE,
+    password_hash varchar(255) NOT NULL,
+    phone varchar(20) NOT NULL,
+    FOREIGN KEY (user_role) REFERENCES user_roles(id)
+)
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    id INTEGER PRIMARY KEY,
+    role_name VARCHAR(20) NOT NULL UNIQUE
+)
 
 INSERT INTO categories (id, name) VALUES
 (1, 'Food'),
