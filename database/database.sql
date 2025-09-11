@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     id INTEGER PRIMARY KEY,
     phone VARCHAR(50) NOT NULL,
     table_id INTEGER NOT NULL,
-    time DATETIME NOT NULL
+    reservation_time DATETIME NOT NULL,
+    FOREIGN KEY (table_id) REFERENCES tables(id)
 );
 
 CREATE TABLE IF NOT EXISTS menu_items (
@@ -183,7 +184,7 @@ INSERT INTO menu_items (id, name, category_id, description_danish, description_e
  'Gin, mango juice, fresh lime and lemon soda.', 
  85.00);
 
-INSERT INTO reservations (id, phone, table_id, time) VALUES
+INSERT INTO reservations (id, phone, table_id, reservation_time) VALUES
 (1, '1456246', 1, '2023-10-01 19:00:00'),
 (2, '243265', 2, '2023-10-01 20:00:00'),
 (3, '3353452', 3, '2023-10-02 18:30:00');
@@ -205,7 +206,11 @@ INSERT INTO users (id, first_name, last_name, user_role, email, password_hash, p
 
 INSERT INTO orders (id, reservation_id, status, created_at) VALUES
 (1, 1, 'open', '2023-10-01 19:05:00'),
-(2, 2, 'completed', '2023-10-01 20:10:00');
+(2, 2, 'open', '2023-10-01 20:10:00'),
+(3, 3, 'open', '2023-10-02 18:35:00'),
+(4, 1, 'completed', '2023-10-01 19:15:00'),
+(5, 2, 'open', '2023-10-01 20:20:00'),
+(6, 3, 'open', '2023-10-02 18:40:00');
 
 INSERT INTO order_lines (id, order_id, menu_item_id, quantity, unit_price) VALUES
 (1, 1, 1, 2, 129.00),

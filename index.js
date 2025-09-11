@@ -130,23 +130,23 @@ app.get("/api/reservation", (req, res) => {
 // DONE
 
 app.post('/api/reservation', (req, res) => {
-  const { phone, table_id, time } = req.body;
+  const { phone, table_id, reservation_time } = req.body;
   const db = new sqlite3.Database(dbPath);
 
-  if (!phone || !table_id || !time) {
+  if (!phone || !table_id || !reservation_time) {
     res.status(400).json({ error: 'One or more values are null' });
     return;
   }
 
   db.run(
-    'INSERT INTO reservations (phone, table_id, time) VALUES (?, ?, ?)',
-    [phone, table_id, time],
+    'INSERT INTO reservations (phone, table_id, reservation_time) VALUES (?, ?, ?)',
+    [phone, table_id, reservation_time],
     function (err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
-      res.json({ id: this.lastID, phone, table_id, time });
+      res.json({ id: this.lastID, phone, table_id, reservation_time });
     }
   );
 });
@@ -175,16 +175,16 @@ app.delete('/api/reservation/:id', (req, res) => {
 app.put('/api/reservation/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
-  const { phone, table_id, time} = req.body;
-
-  if (!phone || !table_id || !time) {
+  const { phone, table_id, reservation_time} = req.body;
+  /*
+  if (!phone || table_id === undefined || !reservation_time) {
     res.status(400).json({ error: 'One or more values are null' });
     return;
   }
-
+  */
   db.run(
-    'UPDATE reservations SET phone = ?, table_id = ?, time = ? WHERE id = ?',
-    [phone, table_id, time, id],
+    'UPDATE reservations SET phone = ?, table_id = ?, reservation_time = ? WHERE id = ?',
+    [phone, table_id, reservation_time, id],
     function (err) {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -194,7 +194,7 @@ app.put('/api/reservation/:id', (req, res) => {
         res.status(404).json({ error: 'Reservation not found' });
         return;
       }
-      res.json({ success: true, updatedId: phone, table_id, time, id});
+      res.json({ success: true, updatedId: phone, table_id, reservation_time, id});
     }
   );
 });
@@ -257,7 +257,7 @@ app.delete('/api/orders/:id', (req, res) => {
 
 // DONE
 
-app.put('/api/orders/:id', (req, res) => {
+app.patch('/api/orders/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
   const { reservation_id, status, created_at} = req.body;

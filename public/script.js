@@ -82,11 +82,12 @@ async function removeReservation(id) {
   }
 };
 
-async function addReservation(phone, table_id, time) {
+async function addReservation(phone, table_id, date, time) {
+  reservation_time = `${date} ${time}`;
   const res = await fetch('/api/reservation', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({phone, table_id, time})
+    body: JSON.stringify({phone, table_id, reservation_time})
   });
   if (res.ok) {
     await fetch("/api/reservation/");
@@ -96,11 +97,11 @@ async function addReservation(phone, table_id, time) {
 };
 
 async function updateReservation(phone, table_id, date, time, id) {
-  DateTime = `${date} ${time}`;
+  reservation_time = `${date} ${time}`;
   const res = await fetch(`/api/reservation/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({phone, table_id, DateTime})
+    body: JSON.stringify({phone, table_id, reservation_time})
   });
   if (res.ok) {
     await fetch("/api/reservation/");
@@ -138,17 +139,30 @@ async function addOrder(reservation_id) {
   }
 };
 
-async function updateOrder(reservation_id, id) {
-  const res = await fetch(`/api/orders/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({customer_id, table_id, time})
-  });
-  if (res.ok) {
-    await fetch("/api/orders/");
-  } else {
-    console.error("Failed to update order:", await res.text());
+async function updateOrder(reservation_id, status, id) {
+  try {
+    const res = await fetch(`/api/orders/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reservation_id,
+        status
+      })
+    });
+
+    if (res.ok) {
+      const updatedOrder = await res.json();
+
+      await fetch("/api/orders/");
+
+      return updatedOrder;
+    } else {
+      console.error("Failed to update order:", await res.text());
+    }
+  } catch (err) {
+    console.error("Error updating order:", err);
   }
-};
+}
+
 
 //#endregion
