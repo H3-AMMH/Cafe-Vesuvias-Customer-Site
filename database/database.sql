@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS order_lines (
   FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
 );
 
+CREATE TABLE IF NOT EXISTS timetable (
+    clock TIME NOT NULL,
+    occupied_tables INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS tables (
     id INTEGER PRIMARY KEY,
     table_number INTEGER NOT NULL
@@ -23,10 +28,9 @@ CREATE TABLE IF NOT EXISTS tables (
 
 CREATE TABLE IF NOT EXISTS reservations (
     id INTEGER PRIMARY KEY,
-    customer_id INTEGER NOT NULL,
+    phone VARCHAR(50) NOT NULL,
     table_id INTEGER NOT NULL,
-    time DATETIME NOT NULL,
-    FOREIGN KEY (table_id) REFERENCES tables(id)
+    time DATETIME NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS menu_items (
@@ -64,18 +68,23 @@ CREATE TABLE IF NOT EXISTS users (
     user_role varchar(20) NOT NULL,
     email varchar(100) NOT NULL UNIQUE,
     password_hash varchar(255) NOT NULL,
-    phone varchar(20) NOT NULL,
+    phone varchar(20) NOT NULL UNIQUE,
     FOREIGN KEY (user_role) REFERENCES user_roles(id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS user_roles (
     id INTEGER PRIMARY KEY,
     role_name VARCHAR(20) NOT NULL UNIQUE
-)
+);
 
 INSERT INTO categories (id, name) VALUES
 (1, 'Food'),
 (2, 'Drinks');
+
+INSERT INTO user_roles (id, role_name) VALUES
+(1, 'admin'),
+(2, 'waiter'),
+(3, 'chef');
 
 INSERT INTO menu_items (id, name, category_id, description_danish, description_english, price) VALUES
 -- Food
@@ -173,3 +182,90 @@ INSERT INTO menu_items (id, name, category_id, description_danish, description_e
  'Gin, mangojuice, frisk lime og lemon.',
  'Gin, mango juice, fresh lime and lemon soda.', 
  85.00);
+
+INSERT INTO reservations (id, phone, table_id, time) VALUES
+(1, '1456246', 1, '2023-10-01 19:00:00'),
+(2, '243265', 2, '2023-10-01 20:00:00'),
+(3, '3353452', 3, '2023-10-02 18:30:00');
+
+INSERT INTO tables (id, table_number) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8),
+(9, 9),
+(10, 10);
+
+INSERT INTO users (id, first_name, last_name, user_role, email, password_hash, phone) VALUES
+(1, 'Admin', 'User', 1, 'Admin@User.com', '$2b$10$KIX/3k1rG8Z0Oe0r5c8bUuJ8y7G1Fz9e6H1jFz9e6H1jFz9e6H1jFz9e6H', '12345678');
+
+INSERT INTO orders (id, reservation_id, status, created_at) VALUES
+(1, 1, 'open', '2023-10-01 19:05:00'),
+(2, 2, 'completed', '2023-10-01 20:10:00');
+
+INSERT INTO order_lines (id, order_id, menu_item_id, quantity, unit_price) VALUES
+(1, 1, 1, 2, 129.00),
+(2, 1, 16, 2, 85.00),
+(3, 2, 5, 1, 139.00),
+(4, 2, 20, 1, 85.00);
+
+INSERT INTO timetable (clock, occupied_tables) VALUES
+('13:00:00', 0),
+('13:10:00', 0),
+('13:20:00', 0),
+('13:30:00', 0),
+('13:40:00', 0),
+('13:50:00', 0),
+('14:00:00', 0),
+('14:10:00', 0),
+('14:20:00', 0),
+('14:30:00', 0),
+('14:40:00', 0),
+('14:50:00', 0),
+('15:00:00', 0),
+('15:10:00', 0),
+('15:20:00', 0),
+('15:30:00', 0),
+('15:40:00', 0),
+('15:50:00', 0),
+('16:00:00', 0),
+('16:10:00', 0),
+('16:20:00', 0),
+('16:30:00', 0),
+('16:40:00', 0),
+('16:50:00', 0),
+('17:00:00', 0),
+('17:10:00', 0),
+('17:20:00', 0),
+('17:30:00', 0),
+('17:40:00', 0),
+('17:50:00', 0),
+('18:00:00', 0),
+('18:10:00', 0),
+('18:20:00', 0),
+('18:30:00', 0),
+('18:40:00', 0),
+('18:50:00', 0),
+('19:00:00', 0),
+('19:10:00', 0),
+('19:20:00', 0),
+('19:30:00', 0),
+('19:40:00', 0),
+('19:50:00', 0),
+('20:00:00', 0),
+('20:10:00', 0),
+('20:20:00', 0),
+('20:30:00', 0),
+('20:40:00', 0),
+('20:50:00', 0),
+('21:00:00', 0),
+('21:10:00', 0),
+('21:20:00', 0),
+('21:30:00', 0),
+('21:40:00', 0),
+('21:50:00', 0),
+('22:00:00', 0);

@@ -28,13 +28,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// MENU SYSTEM
+//#region MENU SYSTEM
 
 async function removeItem(id) {
   const res = await fetch(`/api/menu/${id}`, {
     method: 'DELETE'
   });
-  //${id}
   if (res.ok) {
     await fetch("/api/menu/");
   } else {
@@ -68,42 +67,88 @@ async function updateItem(name, category_id, description_danish, description_eng
   }
 };
 
-// RESERVATION SYSTEM
+//#endregion
+
+//#region RESERVATION SYSTEM
 
 async function removeReservation(id) {
   const res = await fetch(`/api/reservation/${id}`, {
     method: 'DELETE'
   });
-  //${id}
   if (res.ok) {
     await fetch("/api/reservation/");
   } else {
-    console.error("Failed to delete item:", await res.text());
+    console.error("Failed to delete reservation:", await res.text());
   }
 };
 
-async function addReservation(customer_id, table_id, time) {
+async function addReservation(phone, table_id, time) {
   const res = await fetch('/api/reservation', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({customer_id, table_id, time})
+    body: JSON.stringify({phone, table_id, time})
   });
   if (res.ok) {
     await fetch("/api/reservation/");
   } else {
-    console.error("Failed to add item:", await res.text());
+    console.error("Failed to add reservation:", await res.text());
   }
 };
 
-async function updateReservation(customer_id, table_id, time, id) {
+async function updateReservation(phone, table_id, date, time, id) {
+  DateTime = `${date} ${time}`;
   const res = await fetch(`/api/reservation/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({phone, table_id, DateTime})
+  });
+  if (res.ok) {
+    await fetch("/api/reservation/");
+  } else {
+    console.error("Failed to update reservation:", await res.text());
+  }
+};
+
+//#endregion
+
+//#region ORDER SYSTEM
+
+async function removeOrder(id) {
+  const res = await fetch(`/api/orders/${id}`, {
+    method: 'DELETE'
+  });
+  //${id}
+  if (res.ok) {
+    await fetch("/api/orders/");
+  } else {
+    console.error("Failed to delete order:", await res.text());
+  }
+};
+
+async function addOrder(reservation_id) {
+  const res = await fetch('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({reservation_id})
+  });
+  if (res.ok) {
+    await fetch("/api/orders/");
+  } else {
+    console.error("Failed to add order:", await res.text());
+  }
+};
+
+async function updateOrder(reservation_id, id) {
+  const res = await fetch(`/api/orders/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({customer_id, table_id, time})
   });
   if (res.ok) {
-    await fetch("/api/reservation/");
+    await fetch("/api/orders/");
   } else {
-    console.error("Failed to update item:", await res.text());
+    console.error("Failed to update order:", await res.text());
   }
 };
+
+//#endregion

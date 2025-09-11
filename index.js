@@ -28,6 +28,8 @@ if (!fs.existsSync(dbPath)) {
   });
 }
 
+//#region MENU SYSTEM
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -107,11 +109,14 @@ app.put('/api/menu/:id', (req, res) => {
   );
 });
 
-// WORK IN PROGRESS
+
+//#region RESERVATION SYSTEM
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "booking.html"));
 });
+
+// DONE
 
 app.get("/api/reservation", (req, res) => {
   const db = new sqlite3.Database(dbPath);
@@ -122,24 +127,26 @@ app.get("/api/reservation", (req, res) => {
   });
 });
 
+// DONE
+
 app.post('/api/reservation', (req, res) => {
-  const { customer_id, table_id, time } = req.body;
+  const { phone, table_id, time } = req.body;
   const db = new sqlite3.Database(dbPath);
 
-  if (!customer_id || !table_id || !time) {
+  if (!phone || !table_id || !time) {
     res.status(400).json({ error: 'One or more values are null' });
     return;
   }
 
   db.run(
-    'INSERT INTO reservations (customer_id, table_id, time) VALUES (?, ?, ?)',
-    [customer_id, table_id, time],
+    'INSERT INTO reservations (phone, table_id, time) VALUES (?, ?, ?)',
+    [phone, table_id, time],
     function (err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
-      res.json({ id: this.lastID, customer_id, table_id, time });
+      res.json({ id: this.lastID, phone, table_id, time });
     }
   );
 });
@@ -168,16 +175,16 @@ app.delete('/api/reservation/:id', (req, res) => {
 app.put('/api/reservation/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
-  const { customer_id, table_id, time} = req.body;
+  const { phone, table_id, time} = req.body;
 
-  if (!customer_id || !table_id || !time) {
+  if (!phone || !table_id || !time) {
     res.status(400).json({ error: 'One or more values are null' });
     return;
   }
 
   db.run(
-    'UPDATE reservations SET customer_id = ?, table_id = ?, time = ? WHERE id = ?',
-    [customer_id, table_id, time, id],
+    'UPDATE reservations SET phone = ?, table_id = ?, time = ? WHERE id = ?',
+    [phone, table_id, time, id],
     function (err) {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -187,10 +194,97 @@ app.put('/api/reservation/:id', (req, res) => {
         res.status(404).json({ error: 'Reservation not found' });
         return;
       }
-      res.json({ success: true, updatedId: customer_id, table_id, time, id});
+      res.json({ success: true, updatedId: phone, table_id, time, id});
     }
   );
 });
+
+//#endregion
+
+//#region ORDER SYSTEM
+
+app.get("/api/orders", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM orders", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+// DONE
+
+app.post('/api/orders', (req, res) => {
+  const { reservation_id} = req.body;
+  const db = new sqlite3.Database(dbPath);
+
+  if (!reservation_id) {
+    res.status(400).json({ error: 'reservation_id is null' });
+    return;
+  }
+
+  db.run(
+    'INSERT INTO orders (reservation_id) VALUES (?)',
+    [reservation_id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({ id: this.lastID, reservation_id });
+    }
+  );
+});
+
+// DONE
+
+app.delete('/api/orders/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+
+  db.run('DELETE FROM orders WHERE id = ?', [id], function (err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    if (this.changes === 0) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+    res.json({ success: true, deletedId: id });
+  });
+});
+
+// DONE
+
+app.put('/api/orders/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const { reservation_id, status, created_at} = req.body;
+
+  if (!reservation_id) {
+    res.status(400).json({ error: 'reservation_id is null' });
+    return;
+  }
+
+  db.run(
+    'UPDATE orders SET reservation_id = ?, status = status, created_at = created_at WHERE id = ?',
+    [reservation_id, id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Order not found' });
+        return;
+      }
+      res.json({ success: true, updatedId: reservation_id, id});
+    }
+  );
+});
+
+//#endregion
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
