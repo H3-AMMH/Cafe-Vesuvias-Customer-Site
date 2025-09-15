@@ -1,10 +1,19 @@
+require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
+const https = require("https");
 const path = require("path");
 const sqlite3 = require("sqlite3");
-
+const dbPath = process.env.DB_PATH;
 const app = express();
 const port = 3000;
+
+// Reads SSL cert and key
+const options = {
+  key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
+  cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
+};
+
 
 // Middleware
 app.use(express.json());
@@ -14,8 +23,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // Paths
-const dbPath = path.join(__dirname, "database", "database.sqlite");
 const schemaPath = path.join(__dirname, "database", "database.sql");
+
+// ---------- DB initialization ----------
+if (!fs.existsSync(dbPath)) {
+  console.log(`DB at ${dbPath} does not exist!`);
+  console.log("Please make sure the database file exists at the path specified in DB_PATH.");
+} else {
+  console.log(`DB found at ${dbPath}`);
+}
+// ---------- End DB initialization ----------
 
 if (!fs.existsSync(dbPath)) {
   console.log("Database not found. Creating from database.sql...");
@@ -286,6 +303,8 @@ app.patch('/api/orders/:id', (req, res) => {
 
 //#endregion
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+// Start HTTPS server
+https.createServer(options, app).listen(port, '0.0.0.0', () => {
+  console.log(`HTTPS server running on https://0.0.0.0:${port}`);
 });
+
