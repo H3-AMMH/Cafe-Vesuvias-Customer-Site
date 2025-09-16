@@ -135,9 +135,26 @@ app.get("/", (req, res) => {
 
 // DONE
 
-app.get("/api/reservation", (req, res) => {
+app.get("/api/reservations", (req, res) => {
   const db = new sqlite3.Database(dbPath);
-  db.all("SELECT * FROM reservations", [], (err, rows) => {
+  const { date, future } = req.query;
+
+  let sql = "SELECT * FROM reservations";
+  let params = [];
+
+  if (future === "true") {
+    // Get all reservations from today and onwards
+    sql += " WHERE date >= date('now', 'localtime')";
+  } else if (date) {
+    // Get reservations for a specific date
+    sql += " WHERE date = ?";
+    params.push(date);
+  } else {
+    // Default: get today's reservations
+    sql += " WHERE date = date('now', 'localtime')";
+  }
+
+  db.all(sql, params, (err, rows) => {
     if (err) return res.status(500).json({ error: "Database error" });
     res.json(rows);
     db.close();
@@ -146,31 +163,74 @@ app.get("/api/reservation", (req, res) => {
 
 // DONE
 
-app.post('/api/reservation', (req, res) => {
-  const { phone, table_id, reservation_time } = req.body;
+app.post('/api/reservations', (req, res) => {
+
+  console.log("Database path =" + dbPath);
+  const { name, tel, date, time, party_size } = req.body;
+  if (!name || !tel || !date || !time || !party_size) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  const partySizeInt = parseInt(party_size, 10);
+  if (isNaN(partySizeInt) || partySizeInt < 1) {
+    return res.status(400).json({ error: "Invalid party size" });
+  }
+  const tablesNeeded = Math.ceil(partySizeInt / 2);
+  const MAX_TABLES = 56;
+
   const db = new sqlite3.Database(dbPath);
 
-  if (!phone || !table_id || !reservation_time) {
-    res.status(400).json({ error: 'One or more values are null' });
-    return;
-  }
-
+  // Set the status to 'closed' and make the tables available again after 2 hours from the reservation time
+  const now = new Date();
+  const nowISO = now.toISOString().slice(0, 19).replace('T', ' ');
   db.run(
-    'INSERT INTO reservations (phone, table_id, reservation_time) VALUES (?, ?, ?)',
-    [phone, table_id, reservation_time],
+    `UPDATE reservations SET status = 'closed' WHERE status = 'open' AND datetime(date || ' ' || time) <= datetime(?, '-2 hours')`,
+    [nowISO],
     function (err) {
       if (err) {
-        res.status(500).json({ error: err.message });
-        return;
+        console.error("Error auto-closing reservations:", err);
       }
-      res.json({ id: this.lastID, phone, table_id, reservation_time });
     }
   );
+
+  const checkSql = `
+    SELECT COALESCE(SUM(tables_needed), 0) AS tables_booked
+    FROM reservations
+    WHERE date = ?
+      AND status = 'open'
+      AND time < time(?, '+2 hours')
+      AND time(time, '+2 hours') > time(?)
+  `;
+
+  db.get(checkSql, [date, time, time], (err, row) => {
+    if (err) {
+      db.close();
+      return res.status(500).json({ error: "Database check error" });
+    }
+
+    if (row.tables_booked + tablesNeeded > MAX_TABLES) {
+      db.close();
+      return res.status(400).json({ error: "Ikke nok borde til rådighed på dette tidspunkt." });
+    }
+
+    db.run(
+      `INSERT INTO reservations (name, tel, date, time, party_size, tables_needed, status)
+       VALUES (?, ?, ?, ?, ?, ?, 'open')`,
+      [name, tel, date, time, partySizeInt, tablesNeeded],
+      function (err) {
+        if (err) {
+          db.close();
+          return res.status(500).json({ error: "Database insert error" });
+        }
+        res.status(201).json({ success: true, reservation_id: this.lastID });
+        db.close();
+      }
+    );
+  });
 });
 
 // DONE
 
-app.delete('/api/reservation/:id', (req, res) => {
+app.delete('/api/reservations/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
 
@@ -189,7 +249,7 @@ app.delete('/api/reservation/:id', (req, res) => {
 
 // DONE
 
-app.put('/api/reservation/:id', (req, res) => {
+app.put('/api/reservations/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
   const { phone, table_id, reservation_time} = req.body;
