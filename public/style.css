@@ -12,14 +12,6 @@
     --image-background: #a67b5b;
 }
 
-.bodymovinanim {
-  width: 90%;
-  max-width: 50px;
-  margin-bottom: 30px;
-  cursor: pointer;
-  z-index: 1000;
-}
-
 main {
     z-index: 10;
 }
@@ -58,6 +50,13 @@ body {
         color: var(--text);
         text-decoration: none;
         padding: 1vw;
+    }
+
+    .burgermenu {
+        width: 5vh;
+        height: 5vh;
+        cursor: pointer;
+        display: none;
     }
 }
 
@@ -245,10 +244,18 @@ h4 {
         margin-top: 0vh;
         background-color: transparent;
     }
+
     .header-nav-links {
-        width: 0px;
-        height: 0px;
-        display: none;
+        a {
+            display:none;
+        }
+    }
+
+    .burgermenu {
+        width: 5vh;
+        height: 5vh;
+        cursor: pointer;
+        display: unset;
     }
 }
 

@@ -1,4 +1,6 @@
-let iconMenu = document.querySelector('.burgermenu');
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    let iconMenu = document.querySelector('.burgermenu');
 
     let animationMenu = bodymovin.loadAnimation({
             container: iconMenu,
@@ -14,3 +16,7 @@ let iconMenu = document.querySelector('.burgermenu');
       animationMenu.play();
       directionMenu = -directionMenu;
     });
+      } catch (err) {
+    console.error("Failed to load menu:", err);
+  }
+});
