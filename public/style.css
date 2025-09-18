@@ -12,6 +12,14 @@
     --image-background: #a67b5b;
 }
 
+.bodymovinanim {
+  width: 90%;
+  max-width: 50px;
+  margin-bottom: 30px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
 main {
     z-index: 10;
 }
@@ -122,8 +130,7 @@ h1 {
     font-size: 8vh;
     height: 8vh;
     color: var(--image-background);
-    border-bottom-style: solid;
-    border-color: var(--border);
+    border-bottom: solid var(--border);
     margin-bottom: 5%;
 }
 
@@ -140,6 +147,7 @@ h1 {
 .menu-container {
     display: flex;
     flex-direction: row;
+    border-bottom: solid var(--border);
     height: 100%;
 }
 
@@ -232,11 +240,15 @@ h4 {
     .menu-container {
         flex-direction: column;
     }
-}
-
-@media (max-width: 600px) or (resolution > 300dpi) {
-    .menu-container {
-        flex-direction: column;
+    .menu-seperator {
+        padding: 0%;
+        margin-top: 0vh;
+        background-color: transparent;
+    }
+    .header-nav-links {
+        width: 0px;
+        height: 0px;
+        display: none;
     }
 }
 
