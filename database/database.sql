@@ -1,37 +1,29 @@
-CREATE TABLE IF NOT EXISTS orders (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  reservation_id INTEGER NOT NULL,
-  status TEXT DEFAULT 'open',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(reservation_id) REFERENCES reservations(id) ON DELETE CASCADE
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    id INTEGER PRIMARY KEY,
+    role_name VARCHAR(20) NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS order_lines (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  order_id INTEGER NOT NULL,
-  menu_item_id INTEGER NOT NULL,
-  quantity INTEGER NOT NULL CHECK(quantity > 0),
-  unit_price REAL NOT NULL CHECK(unit_price > 0),
-  FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,
-  FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    user_role_id INTEGER NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    FOREIGN KEY (user_role_id) REFERENCES user_roles(id)
 );
 
-CREATE TABLE IF NOT EXISTS timetable (
-    clock TIME NOT NULL,
-    occupied_tables INTEGER NOT NULL
+CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(30) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS tables (
     id INTEGER PRIMARY KEY,
-    table_number INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS reservations (
-    id INTEGER PRIMARY KEY,
-    phone VARCHAR(50) NOT NULL,
-    table_id INTEGER NOT NULL,
-    reservation_time DATETIME NOT NULL,
-    FOREIGN KEY (table_id) REFERENCES tables(id)
+    table_number INTEGER NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS menu_items (
@@ -41,17 +33,13 @@ CREATE TABLE IF NOT EXISTS menu_items (
     description_danish TEXT NOT NULL,
     description_english TEXT,
     price REAL NOT NULL CHECK (price >= 0),
+    isAvailable BOOLEAN NOT NULL DEFAULT 1,
     FOREIGN KEY (category_id) REFERENCES categories(id)
-);
-
-CREATE TABLE IF NOT EXISTS categories (
-    id INTEGER PRIMARY KEY,
-    name VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ingredients (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS item_ingredients (
@@ -62,20 +50,47 @@ CREATE TABLE IF NOT EXISTS item_ingredients (
     FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS reservations (
     id INTEGER PRIMARY KEY,
-    first_name varchar(50) NOT NULL,
-    last_name varchar(50) NOT NULL,
-    user_role varchar(20) NOT NULL,
-    email varchar(100) NOT NULL UNIQUE,
-    password_hash varchar(255) NOT NULL,
-    phone varchar(20) NOT NULL UNIQUE,
-    FOREIGN KEY (user_role) REFERENCES user_roles(id)
+    name TEXT NOT NULL,
+    tel TEXT NOT NULL,
+    date DATE NOT NULL,
+    time TIME NOT NULL,
+    party_size INTEGER NOT NULL,
+    tables_needed INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open'
 );
 
-CREATE TABLE IF NOT EXISTS user_roles (
-    id INTEGER PRIMARY KEY,
-    role_name VARCHAR(20) NOT NULL UNIQUE
+CREATE TABLE IF NOT EXISTS reservation_tables (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reservation_id INTEGER NOT NULL,
+    table_id INTEGER NOT NULL,
+    FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
+    FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE,
+    UNIQUE(reservation_id, table_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reservation_id INTEGER NOT NULL,
+    status TEXT DEFAULT 'open',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(reservation_id) REFERENCES reservations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS order_lines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    menu_item_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL CHECK(quantity > 0),
+    unit_price REAL NOT NULL CHECK(unit_price > 0),
+    FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
+);
+
+CREATE TABLE IF NOT EXISTS timetable (
+    clock TIME NOT NULL PRIMARY KEY,
+    occupied_tables INTEGER NOT NULL DEFAULT 0
 );
 
 INSERT INTO categories (id, name) VALUES
@@ -184,11 +199,7 @@ INSERT INTO menu_items (id, name, category_id, description_danish, description_e
  'Gin, mango juice, fresh lime and lemon soda.', 
  85.00);
 
-INSERT INTO reservations (id, phone, table_id, reservation_time) VALUES
-(1, '1456246', 1, '2023-10-01 19:00:00'),
-(2, '243265', 2, '2023-10-01 20:00:00'),
-(3, '3353452', 3, '2023-10-02 18:30:00');
-
+-- Example data for tables (now only 28 tables)
 INSERT INTO tables (id, table_number) VALUES
 (1, 1),
 (2, 2),
@@ -199,19 +210,39 @@ INSERT INTO tables (id, table_number) VALUES
 (7, 7),
 (8, 8),
 (9, 9),
-(10, 10);
+(10, 10),
+(11, 11),
+(12, 12),
+(13, 13),
+(14, 14),
+(15, 15),
+(16, 16),
+(17, 17),
+(18, 18),
+(19, 19),
+(20, 20),
+(21, 21),
+(22, 22),
+(23, 23),
+(24, 24),
+(25, 25),
+(26, 26),
+(27, 27),
+(28, 28);
 
-INSERT INTO users (id, first_name, last_name, user_role, email, password_hash, phone) VALUES
-(1, 'Admin', 'User', 1, 'Admin@User.com', '$2b$10$KIX/3k1rG8Z0Oe0r5c8bUuJ8y7G1Fz9e6H1jFz9e6H1jFz9e6H1jFz9e6H', '12345678');
+-- Example reservations (with new columns)
+INSERT INTO reservations (id, name, tel, date, time, party_size, tables_needed, status) VALUES
+(1, 'Alice', '1456246', '2023-10-01', '19:00:00', 2, 1, 'open'),
+(2, 'Bob', '243265', '2023-10-01', '20:00:00', 4, 2, 'open'),
+(3, 'Charlie', '3353452', '2023-10-02', '18:30:00', 3, 2, 'open');
 
+-- Example orders (with table_id)
 INSERT INTO orders (id, reservation_id, status, created_at) VALUES
 (1, 1, 'open', '2023-10-01 19:05:00'),
 (2, 2, 'open', '2023-10-01 20:10:00'),
-(3, 3, 'open', '2023-10-02 18:35:00'),
-(4, 1, 'completed', '2023-10-01 19:15:00'),
-(5, 2, 'open', '2023-10-01 20:20:00'),
-(6, 3, 'open', '2023-10-02 18:40:00');
+(3, 3, 'open', '2023-10-02 18:35:00');
 
+-- Example order_lines
 INSERT INTO order_lines (id, order_id, menu_item_id, quantity, unit_price) VALUES
 (1, 1, 1, 2, 129.00),
 (2, 1, 16, 2, 85.00),
