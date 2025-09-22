@@ -134,7 +134,7 @@ app.patch('/api/menu/:id', (req, res) => {
   const { isAvailable } = req.body;
 
   if (isAvailable === undefined) {
-    res.status(400).json({ error: 'One value is null' });
+    res.status(400).json({ error: 'isAvailable is required' });
     return;
   }
 
@@ -150,7 +150,7 @@ app.patch('/api/menu/:id', (req, res) => {
         res.status(404).json({ error: 'Item not found' });
         return;
       }
-      res.json({ success: true, updatedId: isAvailable, id });
+      res.json({ success: true, id, isAvailable });
     }
   );
 });
