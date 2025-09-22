@@ -126,11 +126,11 @@ async function removeOrder(id) {
   }
 };
 
-async function addOrder(reservation_id) {
+async function addOrder(reservation_id, table_id) {
   const res = await fetch('/api/orders', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({reservation_id})
+    body: JSON.stringify({ reservation_id, table_id })
   });
   if (res.ok) {
     await fetch("/api/orders/");
@@ -139,13 +139,14 @@ async function addOrder(reservation_id) {
   }
 };
 
-async function updateOrder(reservation_id, status, id) {
+async function updateOrder(reservation_id, table_id, status, id) {
   try {
     const res = await fetch(`/api/orders/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         reservation_id,
+        table_id,
         status
       })
     });
@@ -216,5 +217,77 @@ async function updateOrderLine(order_id, menu_item_id, quantity, unit_price, id)
     console.error("Error updating order-line:", err);
   }
 }
+
+//#endregion
+
+//#region BOOKING PAGE LOGIC
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Populate time select if it exists
+  const timeSelect = document.querySelector(".tidspunkt-input");
+  if (timeSelect && timeSelect.tagName === "SELECT") {
+    timeSelect.innerHTML = ""; // Clear any existing options
+    // Example: 10:00 to 22:00 every 30 minutes
+    for (let hour = 10; hour <= 22; hour++) {
+      for (let min = 0; min < 60; min += 30) {
+        const h = hour.toString().padStart(2, "0");
+        const m = min.toString().padStart(2, "0");
+        const timeStr = `${h}:${m}`;
+        const option = document.createElement("option");
+        option.value = timeStr;
+        option.textContent = timeStr;
+        timeSelect.appendChild(option);
+      }
+    }
+    // Optionally, add a default empty option
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = "Vælg tidspunkt";
+    emptyOption.selected = true;
+    emptyOption.disabled = true;
+    timeSelect.insertBefore(emptyOption, timeSelect.firstChild);
+  }
+
+  const bookingButton = document.querySelector(".booking-button");
+  if (bookingButton) {
+    bookingButton.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const name = document.querySelector(".name-input").value.trim();
+      const tel = document.querySelector(".tlf-input").value.trim();
+      const party_size = document.querySelector(".bord-input").value.trim();
+      const date = document.querySelector(".dato-input").value;
+      let time = timeSelect ? timeSelect.value : "";
+
+      // If no time selected, use current time (HH:MM)
+      if (!time) {
+        const now = new Date();
+        time = now.toTimeString().slice(0,5);
+      }
+
+      if (!name || !tel || !party_size || !date) {
+        alert("Udfyld alle felter.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/reservations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, tel, date, time, party_size })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("Reservation oprettet!");
+          // Optionally reset form fields here
+        } else {
+          alert(data.error || "Noget gik galt.");
+        }
+      } catch (err) {
+        alert("Server fejl.");
+      }
+    });
+  }
+});
 
 //#endregion

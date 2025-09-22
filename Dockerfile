@@ -5,11 +5,14 @@ WORKDIR /app
 # Copy package files first
 COPY package*.json ./
 
-# Install dependencies (prebuilt sqlite3 binaries usually just work here)
+# Install dependencies
 RUN npm install
 
-# Copy source
+# Copy source code
 COPY . .
 
+# Expose the port your app listens on
 EXPOSE 3000
+
+# Start the app
 CMD ["node", "index.js"]
