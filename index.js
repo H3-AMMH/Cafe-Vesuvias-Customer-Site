@@ -539,6 +539,12 @@ https.createServer(options, app).listen(port, '0.0.0.0', () => {
     });
   });
 
+//#endregion
+
+// Start HTTPS server
+https.createServer(options, app).listen(port, '0.0.0.0', () => {
+  console.log(`HTTPS server running on https://0.0.0.0:${port}`);
+});
   //#endregion
 
   app.listen(port, () => {
