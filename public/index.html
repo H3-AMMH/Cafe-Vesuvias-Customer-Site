@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="./images/cover-image.svg" type="image/svg+xml">
     <script src="./script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.2/lottie.min.js"></script>
+    <script src="./animations/burgermenu.js"></script>
 </head>
 
 <body>
@@ -22,10 +24,11 @@
                 <div class="header-nav-links">
                     <a href="./booking.html">Bord Reservation</a>
                     <a>Staff Login</a>
+                    <div class="burgermenu"></div>
                 </div>
             </header>
-            <img src="./images/cover-image.svg" alt="well shit" class="cover-image cover-image-load-drop-animation">
-            <img src="./images/cover-shape.svg" alt="not again" class="cover-shape">
+            <img src="./images/cover-image.svg" alt="Image could not be loaded" class="cover-image cover-image-load-drop-animation">
+            <img src="./images/cover-shape.svg" alt="Image could not be loaded" class="cover-shape">
         </div>
         <div class="content-container-background">
             <div class="content-container header-fade-in-animation">
@@ -40,7 +43,26 @@
                     </div>
 
                     <div class="menu-seperator"></div>
-                    </div>
+                  
+                    <!-- Test buttons for API endpoints
+                    <button onclick="removeItem(1)"></button>
+                    <button onclick="addItem('goober',1,'goober danish','goober english', 129)"></button>
+                    <button onclick="updateItem('gooberupdate', 1,'gooberupdate danish','gooberupdate english', 129, 2)"></button>
+                    <div class="menu-seperator"></div>
+                    <button onclick="removeReservation(1)"></button>
+                    <button onclick="addReservation('43242432', 1, '2010-05-10', '10:47:03')"></button>
+                    <button onclick="updateReservation('2347823', 2, '2020-10-12', '10:10:10', 2)"></button>
+                    <div class="menu-seperator"></div>
+                    <button onclick="removeOrder(2)"></button>
+                    <button onclick="addOrder(23)"></button>
+                    <button onclick="updateOrder(22, 'open', 1)"></button>
+                    <div class="menu-seperator"></div>
+                    <button onclick="removeOrderLine(2)"></button>
+                    <button onclick="addOrderLine(1,2,2,3)"></button>
+                    <button onclick="updateOrderLine(1,4,2,4,1)"></button>
+                    <div class="menu-seperator"></div>
+                    -->
+                  
                     <div class="menu-column" id="menu-drinks-column">
                         <header class="menu-sub-header-container menu-sub-header header-fade-in-animation">
                             <img src="./images/bubbles-01.svg" class="bubbles-image">

@@ -440,6 +440,109 @@ app.get("/api/categories", (req, res) => {
 // Start HTTPS server
 https.createServer(options, app).listen(port, '0.0.0.0', () => {
   console.log(`HTTPS server running on https://0.0.0.0:${port}`);
+  
+//#region ORDER LINES SYSTEM
+
+// DONE
+
+app.get("/api/orderlines", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM order_lines", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+// DONE
+
+app.post('/api/orderlines', (req, res) => {
+  const { order_id, menu_item_id, quantity, unit_price} = req.body;
+  const db = new sqlite3.Database(dbPath);
+
+  if (!order_id || !menu_item_id || quantity === undefined || unit_price === undefined) {
+    res.status(400).json({ error: 'One or more values are null' });
+    return;
+  }
+
+  db.run(
+    'INSERT INTO order_lines (order_id, menu_item_id, quantity, unit_price) VALUES (?,?,?,?)',
+    [order_id, menu_item_id, quantity, unit_price],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({ id: this.lastID, order_id, menu_item_id, quantity, unit_price });
+    }
+  );
+});
+
+// DONE
+
+app.delete('/api/orderlines/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+
+  db.run('DELETE FROM order_lines WHERE id = ?', [id], function (err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    if (this.changes === 0) {
+      res.status(404).json({ error: 'Order-line not found' });
+      return;
+    }
+    res.json({ success: true, deletedId: id });
+  });
+});
+
+// DONE
+
+app.put('/api/orderlines/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const { order_id, menu_item_id, quantity, unit_price} = req.body;
+
+  if (!order_id || !menu_item_id || quantity === undefined || unit_price === undefined) {
+    res.status(400).json({ error: 'One or more values are null' });
+    return;
+  }
+
+  db.run(
+    'UPDATE order_lines SET order_id = ?, menu_item_id = ?, quantity = ?, unit_price = ? WHERE id = ?',
+    [order_id, menu_item_id, quantity, unit_price, id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Order-line not found' });
+        return;
+      }
+      res.json({ success: true, updatedId: order_id, menu_item_id, quantity, unit_price, id});
+    }
+  );
+});
+
+//#endregion
+
+//#region TIMETABLE SYSTEM
+
+app.get("/api/timetables", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM timetable WHERE occupied_tables < 56", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+//#endregion
+
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
   //#endregion
 

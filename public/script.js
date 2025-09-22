@@ -61,7 +61,7 @@ async function updateItem(name, category_id, description_danish, description_eng
     body: JSON.stringify({ name, category_id, description_danish, description_english, price })
   });
   if (res.ok) {
-    await fetch("/api/reservation/");
+    await fetch("/api/menu/");
   } else {
     console.error("Failed to update item:", await res.text());
   }
@@ -165,6 +165,58 @@ async function updateOrder(reservation_id, table_id, status, id) {
   }
 }
 
+//#endregion
+
+//#region ORDER-LINE SYSTEM
+
+async function removeOrderLine(id) {
+  const res = await fetch(`/api/orderlines/${id}`, {
+    method: 'DELETE'
+  });
+  //${id}
+  if (res.ok) {
+    await fetch("/api/orderlines/");
+  } else {
+    console.error("Failed to delete order-line:", await res.text());
+  }
+};
+
+async function addOrderLine(order_id, menu_item_id, quantity, unit_price) {
+  const res = await fetch('/api/orderlines', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({order_id, menu_item_id, quantity, unit_price})
+  });
+  if (res.ok) {
+    await fetch("/api/orderlines/");
+  } else {
+    console.error("Failed to add order-line:", await res.text());
+  }
+};
+
+async function updateOrderLine(order_id, menu_item_id, quantity, unit_price, id) {
+  try {
+    const res = await fetch(`/api/orderlines/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_id, menu_item_id, quantity, unit_price
+      })
+    });
+
+    if (res.ok) {
+      const updatedOrder = await res.json();
+
+      await fetch("/api/orderlines/");
+
+      return updatedOrder;
+    } else {
+      console.error("Failed to update order-line:", await res.text());
+    }
+  } catch (err) {
+    console.error("Error updating order-line:", err);
+  }
+}
 
 //#endregion
 

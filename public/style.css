@@ -51,6 +51,13 @@ body {
         text-decoration: none;
         padding: 1vw;
     }
+
+    .burgermenu {
+        width: 5vh;
+        height: 5vh;
+        cursor: pointer;
+        display: none;
+    }
 }
 
 .header-nav-links a:hover {
@@ -122,8 +129,7 @@ h1 {
     font-size: 8vh;
     height: 8vh;
     color: var(--image-background);
-    border-bottom-style: solid;
-    border-color: var(--border);
+    border-bottom: solid var(--border);
     margin-bottom: 5%;
 }
 
@@ -140,6 +146,7 @@ h1 {
 .menu-container {
     display: flex;
     flex-direction: row;
+    border-bottom: solid var(--border);
     height: 100%;
 }
 
@@ -232,11 +239,23 @@ h4 {
     .menu-container {
         flex-direction: column;
     }
-}
+    .menu-seperator {
+        padding: 0%;
+        margin-top: 0vh;
+        background-color: transparent;
+    }
 
-@media (max-width: 600px) or (resolution > 300dpi) {
-    .menu-container {
-        flex-direction: column;
+    .header-nav-links {
+        a {
+            display:none;
+        }
+    }
+
+    .burgermenu {
+        width: 5vh;
+        height: 5vh;
+        cursor: pointer;
+        display: unset;
     }
 }
 
@@ -253,7 +272,6 @@ h4 {
 
 /*#endregion Media Queries*/
 
-/* Booking Form Styling */
 /* Booking Form Styling */
 .wrapper {
     display: flex;
