@@ -18,6 +18,18 @@ const options = {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Api key middleware
+const apiKeyAuth = (req, res, next) => {
+  const key = req.headers["x-api-key"];
+  if (key && key === process.env.API_KEY) {
+    return next();
+  }
+  return res.status(403).json({ error: "Invalid API key or its missing" });
+}
+
+// Protects all /api routes
+app.use("/api", apiKeyAuth);
+
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -437,10 +449,6 @@ app.get("/api/categories", (req, res) => {
 
 //#endregion
 
-// Start HTTPS server
-https.createServer(options, app).listen(port, '0.0.0.0', () => {
-  console.log(`HTTPS server running on https://0.0.0.0:${port}`);
-
   //#region ORDER LINES SYSTEM
 
   // DONE
@@ -546,9 +554,3 @@ https.createServer(options, app).listen(port, '0.0.0.0', () => {
   console.log(`HTTPS server running on https://0.0.0.0:${port}`);
 });
   //#endregion
-
-  app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-  });
-  //#endregion
-})

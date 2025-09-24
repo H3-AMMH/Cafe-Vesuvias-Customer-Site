@@ -5,8 +5,7 @@ services:
       - ./public:/app/public
       - /home/hmma/databases:/databases
       - /etc/ssl/cafe-menu:/etc/ssl/cafe-menu
-    environment:
-      - NODE_ENV=production
-      - DB_PATH=/databases/cafe.db
     ports:
       - "3000:3000"
+    env_file:
+      - .env

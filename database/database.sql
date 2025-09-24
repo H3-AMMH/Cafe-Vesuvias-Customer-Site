@@ -230,25 +230,6 @@ INSERT INTO tables (id, table_number) VALUES
 (27, 27),
 (28, 28);
 
--- Example reservations (with new columns)
-INSERT INTO reservations (id, name, tel, date, time, party_size, tables_needed, status) VALUES
-(1, 'Alice', '1456246', '2023-10-01', '19:00:00', 2, 1, 'open'),
-(2, 'Bob', '243265', '2023-10-01', '20:00:00', 4, 2, 'open'),
-(3, 'Charlie', '3353452', '2023-10-02', '18:30:00', 3, 2, 'open');
-
--- Example orders (with table_id)
-INSERT INTO orders (id, reservation_id, status, created_at) VALUES
-(1, 1, 'open', '2023-10-01 19:05:00'),
-(2, 2, 'open', '2023-10-01 20:10:00'),
-(3, 3, 'open', '2023-10-02 18:35:00');
-
--- Example order_lines
-INSERT INTO order_lines (id, order_id, menu_item_id, quantity, unit_price) VALUES
-(1, 1, 1, 2, 129.00),
-(2, 1, 16, 2, 85.00),
-(3, 2, 5, 1, 139.00),
-(4, 2, 20, 1, 85.00);
-
 INSERT INTO timetable (clock, occupied_tables) VALUES
 ('13:00:00', 0),
 ('13:10:00', 0),
