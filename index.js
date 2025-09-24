@@ -111,6 +111,7 @@ app.delete('/api/menu/:id', (req, res) => {
   });
 });
 
+//Menu full update
 app.put('/api/menu/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
@@ -137,6 +138,35 @@ app.put('/api/menu/:id', (req, res) => {
     }
   );
 });
+
+//Menu available update
+app.patch('/api/menu/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const { isAvailable } = req.body;
+
+  if (isAvailable === undefined) {
+    res.status(400).json({ error: 'One value is null' });
+    return;
+  }
+
+  db.run(
+    'UPDATE menu_items SET isAvailable = ? WHERE id = ?',
+    [isAvailable, id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Item not found' });
+        return;
+      }
+      res.json({ success: true, updatedId: isAvailable, id });
+    }
+  );
+});
+
 
 //#endregion
 
@@ -547,10 +577,10 @@ app.get("/api/categories", (req, res) => {
     });
   });
 
-//#endregion
+  //#endregion
 
-// Start HTTPS server
-https.createServer(options, app).listen(port, '0.0.0.0', () => {
-  console.log(`HTTPS server running on https://0.0.0.0:${port}`);
-});
+  // Start HTTPS server
+  https.createServer(options, app).listen(port, '0.0.0.0', () => {
+    console.log(`HTTPS server running on https://0.0.0.0:${port}`);
+  });
   //#endregion
