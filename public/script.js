@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const response = await fetch("/api/menu");
+    const response = await fetch("/api/menu/");
     const items = await response.json();
 
     const drinksCol = document.getElementById("menu-drinks-column");
@@ -15,10 +15,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       </div>
     `;
 
+    const renderUnavailableItem = (item) => `
+        <div class="menu-item menu-item-header">
+        <h2>${item.name} - Midlertidligt utilgængeligt</h2>
+        <h3>${item.description_danish}</h3>
+        <h4>${item.description_english}</h4>
+        <h2>${item.price.toFixed(2)},- DKK</h2>
+      </div>
+    `;
+
     items.forEach(item => {
       if (item.category_id == 2) {
+        if (item.isAvailable === 0) {
+          drinksCol.innerHTML += renderUnavailableItem(item);
+          return;
+        }
         drinksCol.innerHTML += renderItem(item);
       } else if (item.category_id == 1) {
+        if (item.isAvailable === 0) {
+          dishesCol.innerHTML += renderUnavailableItem(item);
+          return;
+        }
         dishesCol.innerHTML += renderItem(item);
       }
     });
@@ -64,6 +81,19 @@ async function updateItem(name, category_id, description_danish, description_eng
     await fetch("/api/menu/");
   } else {
     console.error("Failed to update item:", await res.text());
+  }
+};
+
+async function updateItem(isAvailable, id) {
+  const res = await fetch(`/api/menu/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isAvailable })
+  });
+  if (res.ok) {
+    await fetch("/api/menu/");
+  } else {
+    console.error("Failed to update item availability:", await res.text());
   }
 };
 
