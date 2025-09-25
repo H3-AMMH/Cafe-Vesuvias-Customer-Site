@@ -122,7 +122,7 @@ app.put('/api/menu/:id', (req, res) => {
         res.status(404).json({ error: 'Item not found' });
         return;
       }
-      res.json({ success: true, updatedId: name, category_id, description_danish, description_english, price, isAvailable, id });
+      res.json({ success: true, updatedValues: name, category_id, description_danish, description_english, price, isAvailable, id });
     }
   );
 });
@@ -150,7 +150,7 @@ app.patch('/api/menu/:id', (req, res) => {
         res.status(404).json({ error: 'Item not found' });
         return;
       }
-      res.json({ success: true, id, isAvailable });
+      res.json({ success: true, updatedValues: isAvailable, id });
     }
   );
 });
@@ -370,7 +370,7 @@ app.patch('/api/orders/:id', (req, res) => {
         db.close();
         return;
       }
-      res.json({ success: true, updatedId: id, reservation_id, status });
+      res.json({ success: true, updatedValues: id, reservation_id, status });
       db.close();
     }
   );
@@ -438,7 +438,7 @@ app.patch('/api/order_lines/:id', (req, res) => {
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
       if (this.changes === 0) return res.status(404).json({ error: 'Order line not found' });
-      res.json({ success: true, updatedId: id, quantity });
+      res.json({ success: true, updatedValues: id, quantity });
       db.close();
     }
   );
@@ -548,7 +548,7 @@ app.put('/api/orderlines/:id', (req, res) => {
         res.status(404).json({ error: 'Order-line not found' });
         return;
       }
-      res.json({ success: true, updatedId: order_id, menu_item_id, quantity, unit_price, id });
+      res.json({ success: true, updatedValues: order_id, menu_item_id, quantity, unit_price, id });
     }
   );
 });
