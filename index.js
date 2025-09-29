@@ -1,19 +1,21 @@
-require("dotenv").config();
+
+//require("dotenv").config();
+const bcrypt = require("bcrypt");
 const express = require("express");
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
 const sqlite3 = require("sqlite3");
-const dbPath = process.env.DB_PATH;
+const dbPath = /*process.env.DB_PATH*/ path.join(__dirname, "database", "database.sqlite");
 const app = express();
 const port = 3000;
-
+/*
 // Reads SSL cert and key
 const options = {
   key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
   cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
 };
-
+*/
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -568,12 +570,92 @@ app.get("/api/timetables", (req, res) => {
 
 //#endregion
 
+//#region LOGIN SYSTEM
+
+app.post("/api/login", (req, res) => {
+    const { username, password } = req.body;
+    const db = new sqlite3.Database(dbPath);
+
+    // We assume "username" is actually their email (based on your schema)
+    db.get("SELECT * FROM users WHERE email = ?", [username], async (err, user) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+
+        if (!user) {
+            return res.status(401).json({ message: "User does not exist" });
+        }
+
+        try {
+            const isMatch = await bcrypt.compare(password, user.password_hash);
+
+            if (!isMatch) {
+                return res.status(401).json({ message: "Invalid email or password" });
+            }
+
+            // Successful login
+            res.status(200).json({
+                message: "Login successful",
+                username: user.first_name,
+                userId: user.id,
+                role: user.user_role_id,
+            });
+
+        } catch (hashError) {
+            console.error("Hash compare error:", hashError);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+});
+
+app.post("/api/signup", async (req, res) => {
+    try {
+        const { first_name, last_name, user_role_id, email, password, phone } = req.body;
+        const db = new sqlite3.Database(dbPath);
+
+        if (!first_name || !last_name || !user_role_id || !email || !password || !phone) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        // Hash the password securely
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        db.run('INSERT INTO users (first_name, last_name, user_role_id, email, password_hash, phone) VALUES (?,?,?,?,?,?)', 
+          [first_name, last_name, user_role_id, email, hashedPassword, phone], 
+          function (err) {
+            if (err) {
+                if (err.message.includes("UNIQUE constraint failed")) {
+                    return res.status(409).json({ error: "Email already registered" });
+                }
+                console.error("Database error:", err);
+                return res.status(500).json({ error: "Internal server error" });
+            }
+
+            res.status(201).json({
+                id: this.lastID,
+                first_name,
+                last_name,
+                user_role_id,
+                email,
+                phone
+            });
+        });
+
+    } catch (err) {
+        console.error("Signup error:", err);
+        res.status(500).json({ error: "Failed to create user" + err.message });
+    }
+});
+
+//#endregion
+/*
 // Start HTTPS server
 https.createServer(options, app).listen(port, '0.0.0.0', () => {
   console.log(`HTTPS server running on https://0.0.0.0:${port}`);
 });
 //#endregion
-
+*/
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
