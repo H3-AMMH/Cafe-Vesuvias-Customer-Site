@@ -1,4 +1,5 @@
 require("dotenv").config();
+const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fs = require("fs");
 const https = require("https");
@@ -7,12 +8,23 @@ const sqlite3 = require("sqlite3");
 const dbPath = process.env.DB_PATH;
 const app = express();
 const port = 3000;
+const metabaseRoutes = require("./metabase");
+app.use("/", metabaseRoutes);
+
+const db = process.env.NODE_ENV === "test"
+? require("./database/testCafe")
+: require("./database/cafe");
+
+module.exports = { app, db };
 
 // Reads SSL cert and key
-const options = {
-  key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
-  cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
-};
+let options;
+if (process.env.NODE_ENV !== "test") {
+  options = {
+    key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
+    cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
+  };
+}
 
 // Middleware
 app.use(express.json());
@@ -27,8 +39,14 @@ const apiKeyAuth = (req, res, next) => {
   return res.status(403).json({ error: "Invalid API key or its missing" });
 }
 
-// Protects all /api routes
-app.use("/api", apiKeyAuth);
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100,
+});
+
+// apiKeyAuth check for valid API key
+// limiter prevents brute-force attacks
+app.use("/api", apiKeyAuth, limiter);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
@@ -62,6 +80,15 @@ app.get("/", (req, res) => {
 });
 
 //#region MENU SYSTEM
+
+app.get("/api/menu/available", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM menu_items WHERE isAvailable = 1", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
 
 app.get("/api/menu", (req, res) => {
   const db = new sqlite3.Database(dbPath);
@@ -479,50 +506,78 @@ app.get("/api/categories", (req, res) => {
 
 //#endregion
 
-  //#region ORDER LINES SYSTEM
+//#region ORDER LINES SYSTEM
 
-  // DONE
+// DONE
 
-  app.get("/api/orderlines", (req, res) => {
-    const db = new sqlite3.Database(dbPath);
-    db.all("SELECT * FROM order_lines", [], (err, rows) => {
-      if (err) return res.status(500).json({ error: "Database error" });
-      res.json(rows);
-      db.close();
-    });
+app.get("/api/orderlines", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM order_lines", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
   });
+});
 
-  // DONE
+// DONE
 
-  app.post('/api/orderlines', (req, res) => {
-    const { order_id, menu_item_id, quantity, unit_price } = req.body;
-    const db = new sqlite3.Database(dbPath);
+app.post('/api/orderlines', (req, res) => {
+  const { order_id, menu_item_id, quantity, unit_price } = req.body;
+  const db = new sqlite3.Database(dbPath);
 
-    if (!order_id || !menu_item_id || quantity === undefined || unit_price === undefined) {
-      res.status(400).json({ error: 'One or more values are null' });
+  if (!order_id || !menu_item_id || quantity === undefined || unit_price === undefined) {
+    res.status(400).json({ error: 'One or more values are null' });
+    return;
+  }
+
+  db.run(
+    'INSERT INTO order_lines (order_id, menu_item_id, quantity, unit_price) VALUES (?,?,?,?)',
+    [order_id, menu_item_id, quantity, unit_price],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({ id: this.lastID, order_id, menu_item_id, quantity, unit_price });
+    }
+  );
+});
+
+// DONE
+
+app.delete('/api/orderlines/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+
+  db.run('DELETE FROM order_lines WHERE id = ?', [id], function (err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
       return;
     }
-
-    db.run(
-      'INSERT INTO order_lines (order_id, menu_item_id, quantity, unit_price) VALUES (?,?,?,?)',
-      [order_id, menu_item_id, quantity, unit_price],
-      function (err) {
-        if (err) {
-          res.status(500).json({ error: err.message });
-          return;
-        }
-        res.json({ id: this.lastID, order_id, menu_item_id, quantity, unit_price });
-      }
-    );
+    if (this.changes === 0) {
+      res.status(404).json({ error: 'Order-line not found' });
+      return;
+    }
+    res.json({ success: true, deletedId: id });
   });
+});
 
-  // DONE
+// DONE
 
-  app.delete('/api/orderlines/:id', (req, res) => {
-    const id = req.params.id;
-    const db = new sqlite3.Database(dbPath);
+app.put('/api/orderlines/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const { order_id, menu_item_id, quantity, unit_price } = req.body;
 
-    db.run('DELETE FROM order_lines WHERE id = ?', [id], function (err) {
+  if (!order_id || !menu_item_id || quantity === undefined || unit_price === undefined) {
+    res.status(400).json({ error: 'One or more values are null' });
+    return;
+  }
+
+  db.run(
+    'UPDATE order_lines SET order_id = ?, menu_item_id = ?, quantity = ?, unit_price = ? WHERE id = ?',
+    [order_id, menu_item_id, quantity, unit_price, id],
+    function (err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
@@ -531,56 +586,33 @@ app.get("/api/categories", (req, res) => {
         res.status(404).json({ error: 'Order-line not found' });
         return;
       }
-      res.json({ success: true, deletedId: id });
-    });
-  });
-
-  // DONE
-
-  app.put('/api/orderlines/:id', (req, res) => {
-    const id = req.params.id;
-    const db = new sqlite3.Database(dbPath);
-    const { order_id, menu_item_id, quantity, unit_price } = req.body;
-
-    if (!order_id || !menu_item_id || quantity === undefined || unit_price === undefined) {
-      res.status(400).json({ error: 'One or more values are null' });
-      return;
+      res.json({ success: true, updatedId: order_id, menu_item_id, quantity, unit_price, id });
     }
+  );
+});
 
-    db.run(
-      'UPDATE order_lines SET order_id = ?, menu_item_id = ?, quantity = ?, unit_price = ? WHERE id = ?',
-      [order_id, menu_item_id, quantity, unit_price, id],
-      function (err) {
-        if (err) {
-          res.status(500).json({ error: err.message });
-          return;
-        }
-        if (this.changes === 0) {
-          res.status(404).json({ error: 'Order-line not found' });
-          return;
-        }
-        res.json({ success: true, updatedId: order_id, menu_item_id, quantity, unit_price, id });
-      }
-    );
+//#endregion
+
+//#region TIMETABLE SYSTEM
+
+app.get("/api/timetables", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM timetable WHERE occupied_tables < 56", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
   });
+});
 
-  //#endregion
+//#endregion
 
-  //#region TIMETABLE SYSTEM
-
-  app.get("/api/timetables", (req, res) => {
-    const db = new sqlite3.Database(dbPath);
-    db.all("SELECT * FROM timetable WHERE occupied_tables < 56", [], (err, rows) => {
-      if (err) return res.status(500).json({ error: "Database error" });
-      res.json(rows);
-      db.close();
-    });
-  });
-
-  //#endregion
-
-  // Start HTTPS server
+// Start HTTPS server (if not in test mode)
+if (process.env.NODE_ENV !== "test") {
   https.createServer(options, app).listen(port, '0.0.0.0', () => {
     console.log(`HTTPS server running on https://0.0.0.0:${port}`);
   });
-  //#endregion
+}
+//#endregion
+
+// Export app for integration testing
+module.exports = app;
