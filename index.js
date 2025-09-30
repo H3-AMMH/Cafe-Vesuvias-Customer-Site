@@ -1,5 +1,5 @@
 require("dotenv").config();
-const bcrypt = require("bcrypt");
+const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fs = require("fs");
 const https = require("https");
@@ -8,16 +8,45 @@ const sqlite3 = require("sqlite3");
 const dbPath = process.env.DB_PATH /*path.join(__dirname, "database", "database.sqlite")*/;
 const app = express();
 const port = 3000;
+const metabaseRoutes = require("./metabase");
+app.use("/", metabaseRoutes);
+
+const db = process.env.NODE_ENV === "test"
+? require("./database/testCafe")
+: require("./database/cafe");
+
+module.exports = { app, db };
 
 // Reads SSL cert and key
-const options = {
-  key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
-  cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
-};
+let options;
+if (process.env.NODE_ENV !== "test") {
+  options = {
+    key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
+    cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
+  };
+}
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Api key middleware
+const apiKeyAuth = (req, res, next) => {
+  const key = req.headers["x-api-key"];
+  if (key && key === process.env.API_KEY) {
+    return next();
+  }
+  return res.status(403).json({ error: "Invalid API key or its missing" });
+}
+
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100,
+});
+
+// apiKeyAuth check for valid API key
+// limiter prevents brute-force attacks
+app.use("/api", apiKeyAuth, limiter);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
@@ -62,6 +91,15 @@ app.get("/", (req, res) => {
 });
 
 //#region MENU SYSTEM
+
+app.get("/api/menu/available", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM menu_items WHERE isAvailable = 1", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
 
 app.get("/api/menu", (req, res) => {
   const db = new sqlite3.Database(dbPath);
@@ -294,6 +332,34 @@ app.delete('/api/reservations/:id', (req, res) => {
   });
 });
 
+app.patch('/api/reservations/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const { status } = req.body;
+
+  if (status === undefined) {
+    res.status(400).json({ error: 'One value is null' });
+    return;
+  }
+
+  db.run(
+    'UPDATE reservations SET status = ? WHERE id = ?',
+    [status, id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Item not found' });
+        return;
+      }
+        res.json({ success: true, id, status });
+    }
+  );
+});
+
+
 //#endregion
 
 //#region ORDER SYSTEM
@@ -480,6 +546,8 @@ app.get("/api/categories", (req, res) => {
 
 //#region ORDER LINES SYSTEM
 
+// DONE
+
 app.get("/api/orderlines", (req, res) => {
   const db = new sqlite3.Database(dbPath);
   db.all("SELECT * FROM order_lines", [], (err, rows) => {
@@ -488,6 +556,8 @@ app.get("/api/orderlines", (req, res) => {
     db.close();
   });
 });
+
+// DONE
 
 app.post('/api/orderlines', (req, res) => {
   const { order_id, menu_item_id, quantity, unit_price } = req.body;
@@ -511,6 +581,8 @@ app.post('/api/orderlines', (req, res) => {
   );
 });
 
+// DONE
+
 app.delete('/api/orderlines/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
@@ -527,6 +599,8 @@ app.delete('/api/orderlines/:id', (req, res) => {
     res.json({ success: true, deletedId: id });
   });
 });
+
+// DONE
 
 app.put('/api/orderlines/:id', (req, res) => {
   const id = req.params.id;
@@ -550,7 +624,7 @@ app.put('/api/orderlines/:id', (req, res) => {
         res.status(404).json({ error: 'Order-line not found' });
         return;
       }
-      res.json({ success: true, updatedValues: order_id, menu_item_id, quantity, unit_price, id });
+      res.json({ success: true, updatedId: order_id, menu_item_id, quantity, unit_price, id });
     }
   );
 });
@@ -570,93 +644,13 @@ app.get("/api/timetables", (req, res) => {
 
 //#endregion
 
-//#region LOGIN SYSTEM
-
-app.post("/api/login", (req, res) => {
-    const { username, password } = req.body;
-    const db = new sqlite3.Database(dbPath);
-
-    // We assume "username" is actually their email (based on your schema)
-    db.get("SELECT * FROM users WHERE email = ?", [username], async (err, user) => {
-        if (err) {
-            console.error("Database error:", err);
-            return res.status(500).json({ message: "Internal server error" });
-        }
-
-        if (!user) {
-            return res.status(401).json({ message: "User does not exist" });
-        }
-
-        try {
-            const isMatch = await bcrypt.compare(password, user.password_hash);
-
-            if (!isMatch) {
-                return res.status(401).json({ message: "Invalid email or password" });
-            }
-
-            // Successful login
-            res.status(200).json({
-                message: "Login successful",
-                username: user.first_name,
-                userId: user.id,
-                role: user.user_role_id,
-            });
-
-        } catch (hashError) {
-            console.error("Hash compare error:", hashError);
-            return res.status(500).json({ message: "Internal server error" });
-        }
-    });
-});
-
-app.post("/api/signup", async (req, res) => {
-    try {
-        const { first_name, last_name, user_role_id, email, password, phone } = req.body;
-        const db = new sqlite3.Database(dbPath);
-
-        if (!first_name || !last_name || !user_role_id || !email || !password || !phone) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-
-        // Hash the password securely
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        db.run('INSERT INTO users (first_name, last_name, user_role_id, email, password_hash, phone) VALUES (?,?,?,?,?,?)', 
-          [first_name, last_name, user_role_id, email, hashedPassword, phone], 
-          function (err) {
-            if (err) {
-                if (err.message.includes("UNIQUE constraint failed")) {
-                    return res.status(409).json({ error: "Email already registered" });
-                }
-                console.error("Database error:", err);
-                return res.status(500).json({ error: "Internal server error" });
-            }
-
-            res.status(201).json({
-                id: this.lastID,
-                first_name,
-                last_name,
-                user_role_id,
-                email,
-                phone
-            });
-        });
-
-    } catch (err) {
-        console.error("Signup error:", err);
-        res.status(500).json({ error: "Failed to create user" + err.message });
-    }
-});
-
+// Start HTTPS server (if not in test mode)
+if (process.env.NODE_ENV !== "test") {
+  https.createServer(options, app).listen(port, '0.0.0.0', () => {
+    console.log(`HTTPS server running on https://0.0.0.0:${port}`);
+  });
+}
 //#endregion
 
-// Start HTTPS server
-https.createServer(options, app).listen(port, '0.0.0.0', () => {
-  console.log(`HTTPS server running on https://0.0.0.0:${port}`);
-});
-
-//#endregion
-
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+// Export app for integration testing
+module.exports = app;
