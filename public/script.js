@@ -71,6 +71,19 @@ async function updateItem(name, category_id, description_danish, description_eng
   }
 };
 
+async function updateItem(isAvailable, id) {
+  const res = await fetch(`/api/menu/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isAvailable })
+  });
+  if (res.ok) {
+    await fetch("/api/menu/");
+  } else {
+    console.error("Failed to update item availability:", await res.text());
+  }
+};
+
 //#endregion
 
 //#region RESERVATION SYSTEM

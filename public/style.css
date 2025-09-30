@@ -10,6 +10,7 @@
     --text-gray: #b9b9b9;
     --text-gray-inverted: #414141;
     --image-background: #a67b5b;
+    --image-background-dark: #594231;
 }
 
 main {
@@ -56,7 +57,6 @@ body {
         width: 5vh;
         height: 5vh;
         cursor: pointer;
-        display: none;
     }
 }
 
@@ -76,7 +76,7 @@ h1 {
     position: relative;
     height: 65vh;
     width: 100%;
-    background-color: var(--image-background);
+    background-image: linear-gradient(to bottom, var(--image-background), var(--image-background-dark));
 }
 
 .cover-image {
@@ -235,7 +235,7 @@ h4 {
 
 /*#region Media Queries*/
 
-@media (max-width: 800px) or (resolution > 200dpi) {
+@media (max-width: 900px) or (resolution > 200dpi) {
     .menu-container {
         flex-direction: column;
     }
@@ -255,7 +255,19 @@ h4 {
         width: 5vh;
         height: 5vh;
         cursor: pointer;
-        display: unset;
+        display: inline;
+    }
+}
+
+@media (min-width: 900px) and (resolution <= 200dpi) {
+    .header-nav-links {
+        a {
+            display: inline;
+        }
+    }
+
+    .burgermenu {
+        display: none;
     }
 }
 

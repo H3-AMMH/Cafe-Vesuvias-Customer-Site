@@ -102,6 +102,9 @@ INSERT INTO user_roles (id, role_name) VALUES
 (2, 'waiter'),
 (3, 'chef');
 
+INSERT INTO users (id, first_name, last_name, user_role_id, email, password_hash, phone) VALUES
+(1, 'Admin', 'User', 1, 'Admin@gmail.com', '$2b$10$3Kn7oerCSLiPsp2BIfgiJeqG5XkHwtNY97zHmLdmNERlHFxryqjOq', '12345678');
+
 INSERT INTO menu_items (id, name, category_id, description_danish, description_english, price) VALUES
 -- Food
 (1, 'Nachos Supreme', 1, 
