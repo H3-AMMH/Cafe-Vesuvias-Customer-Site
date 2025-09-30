@@ -1,0 +1,39 @@
+:root {
+    --header: transparent;
+    --border: #353535;
+    --body-background: #fafafa;
+    --card-background: #232121;
+    --text: #ffffff;
+    --text-inverted: #000000;
+    --text-gray: #b9b9b9;
+    --text-gray-inverted: #414141;
+    --image-background: #a67b5b;
+    --image-background-dark: #594231;
+}
+
+.top-container {
+    height: auto;
+}
+
+.main-container {
+    width: 100%;
+    display: inline;
+    justify-content: center;
+}
+
+.container-item {
+    display: inline;
+
+    p {
+        color: var(--text);
+        font-size: 2vh;
+    }
+
+    button {
+        margin-bottom: 4vh;
+    }
+}
+
+body {
+    background-color: var(--card-background);
+}

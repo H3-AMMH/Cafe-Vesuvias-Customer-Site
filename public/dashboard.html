@@ -10,6 +10,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Café Vesuvias</title>
     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./dashboard.css">
     <link rel="icon" href="./images/cover-image.svg" type="image/svg+xml">
     <script src="./script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.2/lottie.min.js"></script>
@@ -19,7 +20,7 @@
 <body>
     <main>
         <div class="top-container">
-            <header class="header-container header-fade-in-animation">
+            <header class="header-container">
                 <h1 class="header-text">Café Vesuvius</h1>
                 <div class="header-nav-links">
                     <a href="./booking.html">Bord Reservation</a>
@@ -27,50 +28,43 @@
                     <div class="burgermenu"></div>
                 </div>
             </header>
-            <img src="./images/cover-image.svg" alt="Image could not be loaded" class="cover-image cover-image-load-drop-animation">
-            <img src="./images/cover-shape.svg" alt="Image could not be loaded" class="cover-shape">
         </div>
-        <div class="content-container-background">
-            <div class="content-container header-fade-in-animation">
-                <h1 class="menu-header">Vores Menu</h1>
-                <div class="menu-container">
-                    <div class="menu-column" id="menu-dish-column">
-                        <header class="menu-sub-header-container menu-sub-header header-fade-in-animation">
-                            <img src="./images/fork.svg" class="knife-fork-image">
-                            <h2 class="">Retter</h2>
-                            <img src="./images/knife.svg" class="knife-fork-image">
-                        </header>
-                    </div>
-
-                    <div class="menu-seperator"></div>
-                  
-                    <!-- Test buttons for API endpoints
-                    <button onclick="removeItem(1)"></button>
-                    <button onclick="addItem('goober',1,'goober danish','goober english', 129)"></button>
-                    <button onclick="updateItem(0, 2)"></button>
-                    <div class="menu-seperator"></div>
-                    <button onclick="removeReservation(1)"></button>
-                    <button onclick="addReservation('43242432', 1, '2010-05-10', '10:47:03')"></button>
-                    <button onclick="updateReservation('2347823', 2, '2020-10-12', '10:10:10', 2)"></button>
-                    <div class="menu-seperator"></div>
-                    <button onclick="removeOrder(2)"></button>
-                    <button onclick="addOrder(23)"></button>
-                    <button onclick="updateOrder(22, 'open', 1)"></button>
-                    <div class="menu-seperator"></div>
-                    <button onclick="removeOrderLine(2)"></button>
-                    <button onclick="addOrderLine(1,2,2,3)"></button>
-                    <button onclick="updateOrderLine(1,4,2,4,1)"></button>
-                    <div class="menu-seperator"></div>
-                    -->
-                  
-                    <div class="menu-column" id="menu-drinks-column">
-                        <header class="menu-sub-header-container menu-sub-header header-fade-in-animation">
-                            <img src="./images/bubbles-01.svg" class="bubbles-image">
-                            <h2 class="">Drinks</h2>
-                            <img src="./images/bubbles-01.svg" class="bubbles-image">
-                        </header>
-                    </div>
-                </div>
+        <div class="main-container">
+            <div class="container-item">
+                <p>Titel: Nachos Supreme</p>
+                <p>Kategori: Retter</p>
+                <p>Beskrivelse Dansk: Varme tortillachips med crispy kylling, jalapeños, gratineret med ost, serveres med salsa, guacamole og creme fraiche</p>
+                <p>Beskrivelse Engelsk: Warm tortilla chips with crispy chicken, jalapeños, melted cheese, served with salsa, guacamole and sour cream</p>
+                <p>Pris: 129,- DKK</p>
+                <button>Slet</button>
+                <button>Rediger</button>
+            </div>
+            <div class="container-item">
+                <p>Titel: Nachos Supreme</p>
+                <p>Kategori: Retter</p>
+                <p>Beskrivelse Dansk: Varme tortillachips med crispy kylling, jalapeños, gratineret med ost, serveres med salsa, guacamole og creme fraiche</p>
+                <p>Beskrivelse Engelsk: Warm tortilla chips with crispy chicken, jalapeños, melted cheese, served with salsa, guacamole and sour cream</p>
+                <p>Pris: 129,- DKK</p>
+                <button>Slet</button>
+                <button>Rediger</button>
+            </div>
+            <div class="container-item">
+                <p>Titel: Nachos Supreme</p>
+                <p>Kategori: Retter</p>
+                <p>Beskrivelse Dansk: Varme tortillachips med crispy kylling, jalapeños, gratineret med ost, serveres med salsa, guacamole og creme fraiche</p>
+                <p>Beskrivelse Engelsk: Warm tortilla chips with crispy chicken, jalapeños, melted cheese, served with salsa, guacamole and sour cream</p>
+                <p>Pris: 129,- DKK</p>
+                <button>Slet</button>
+                <button>Rediger</button>
+            </div>
+            <div class="container-item">
+                <p>Titel: Nachos Supreme</p>
+                <p>Kategori: Retter</p>
+                <p>Beskrivelse Dansk: Varme tortillachips med crispy kylling, jalapeños, gratineret med ost, serveres med salsa, guacamole og creme fraiche</p>
+                <p>Beskrivelse Engelsk: Warm tortilla chips with crispy chicken, jalapeños, melted cheese, served with salsa, guacamole and sour cream</p>
+                <p>Pris: 129,- DKK</p>
+                <button>Slet</button>
+                <button>Rediger</button>
             </div>
         </div>
     </main>

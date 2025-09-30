@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    const test = await fetch("/api/users/"); // DELETE LATER
+
     const response = await fetch("/api/menu/");
     const items = await response.json();
 
@@ -376,17 +378,16 @@ async function signupUser(first_name, last_name, email, password, phone, user_ro
 
         if (res.ok) {
             const data = await res.json();
-            alert(`✅ Account created for ${data.first_name}!`);
+            console.error(`Account created: ${data.first_name}`);
             
             // Optionally auto-login or redirect:
             window.location.href = "/dashboard.html";
         } else {
             const errorData = await res.json();
-            alert(`❌ Signup failed: ${errorData.error}`);
+            console.error(`Signup failed: ${errorData.error}`);
         }
     } catch (err) {
         console.error("Signup error:", err);
-        alert("Something went wrong. Please try again.");
     }
 }
 

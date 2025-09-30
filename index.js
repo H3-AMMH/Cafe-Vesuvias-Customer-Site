@@ -1,21 +1,20 @@
-
-//require("dotenv").config();
+require("dotenv").config();
 const bcrypt = require("bcrypt");
 const express = require("express");
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
 const sqlite3 = require("sqlite3");
-const dbPath = /*process.env.DB_PATH*/ path.join(__dirname, "database", "database.sqlite");
+const dbPath = process.env.DB_PATH /*path.join(__dirname, "database", "database.sqlite")*/;
 const app = express();
 const port = 3000;
-/*
+
 // Reads SSL cert and key
 const options = {
   key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
   cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
 };
-*/
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -45,6 +44,17 @@ if (!fs.existsSync(dbPath)) {
   });
 }
 // ---------- END DB initialization ----------
+
+// TEST
+
+app.get("/api/users", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM users", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
 
 // Serve main page
 app.get("/", (req, res) => {
@@ -156,7 +166,6 @@ app.patch('/api/menu/:id', (req, res) => {
     }
   );
 });
-
 
 //#endregion
 
@@ -469,10 +478,7 @@ app.get("/api/categories", (req, res) => {
 
 //#endregion
 
-
 //#region ORDER LINES SYSTEM
-
-// DONE
 
 app.get("/api/orderlines", (req, res) => {
   const db = new sqlite3.Database(dbPath);
@@ -482,8 +488,6 @@ app.get("/api/orderlines", (req, res) => {
     db.close();
   });
 });
-
-// DONE
 
 app.post('/api/orderlines', (req, res) => {
   const { order_id, menu_item_id, quantity, unit_price } = req.body;
@@ -507,8 +511,6 @@ app.post('/api/orderlines', (req, res) => {
   );
 });
 
-// DONE
-
 app.delete('/api/orderlines/:id', (req, res) => {
   const id = req.params.id;
   const db = new sqlite3.Database(dbPath);
@@ -525,8 +527,6 @@ app.delete('/api/orderlines/:id', (req, res) => {
     res.json({ success: true, deletedId: id });
   });
 });
-
-// DONE
 
 app.put('/api/orderlines/:id', (req, res) => {
   const id = req.params.id;
@@ -649,14 +649,14 @@ app.post("/api/signup", async (req, res) => {
 });
 
 //#endregion
-/*
+
 // Start HTTPS server
 https.createServer(options, app).listen(port, '0.0.0.0', () => {
   console.log(`HTTPS server running on https://0.0.0.0:${port}`);
 });
+
 //#endregion
-*/
+
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-//#endregion
