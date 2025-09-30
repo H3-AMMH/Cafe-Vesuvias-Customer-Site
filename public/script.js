@@ -242,6 +242,64 @@ async function updateOrderLine(order_id, menu_item_id, quantity, unit_price, id)
 
 //#region BOOKING PAGE LOGIC
 
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    reloadContent();
+
+  } catch (err) {
+    console.error("Failed to load menu:", err);
+  }
+});
+
+async function reloadContent() {
+  const itemContainer = document.getElementById("main-container");
+
+  const menuRes = await fetch("/api/menu/");
+  const items = await menuRes.json();
+
+  itemContainer.innerHTML = "";
+
+  const categoryRes = await fetch("/api/menu/category/");
+  const categories = await categoryRes.json();
+
+  const renderItem = (item, category) => `
+    <div class="container-item">
+      <p>Titel: ${item.name}</p>
+      <p>Kategori: ${category}</p>
+      <p>Tilgængeligt: ${AvailabilityToString(item.isAvailable)}</p>
+      <p>Beskrivelse Dansk: ${item.description_danish}</p>
+      <p>Beskrivelse Engelsk: ${item.description_english}</p>
+      <p>Pris: ${item.price.toFixed(2)},- DKK</p>
+      <button onclick="(async () => { 
+        await removeItem(${item.id}); 
+        await reloadContent(); 
+      })();">Slet</button>
+      <button>Rediger</button>
+    </div>
+  `;
+
+  items.forEach(item => {
+    if (FindCategoryName(item, categories))
+    {
+      itemContainer.innerHTML += renderItem(item, item.category_id.toString());
+    }
+  });
+
+  function AvailabilityToString(isAvailable) {
+    return isAvailable === 1 ? "Ja" : "Nej";
+  }
+
+  function FindCategoryName(item, categories) {
+    categories.forEach(category => {
+      if (category.id === item.category_id) {
+        itemContainer.innerHTML += renderItem(item, category.name); 
+        return true;
+      }
+    });
+    return false;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Populate time select if it exists
   const timeSelect = document.querySelector(".tidspunkt-input");

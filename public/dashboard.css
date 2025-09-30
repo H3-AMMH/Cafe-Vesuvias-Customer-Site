@@ -2,7 +2,7 @@
     --header: transparent;
     --border: #353535;
     --body-background: #fafafa;
-    --card-background: #232121;
+    --dashboard-background: #232121;
     --text: #ffffff;
     --text-inverted: #000000;
     --text-gray: #b9b9b9;
@@ -22,18 +22,33 @@
 }
 
 .container-item {
-    display: inline;
+    margin-left: 0.5vw;
+    margin-bottom: 4vh;
+
+    button {
+        transition: 0.5s;
+        color: var(--text);
+        background-color: var(--image-background);
+        background-image: linear-gradient(to bottom, var(--image-background), var(--image-background-dark));
+        border: none;
+        padding: 3px 8px;
+        border-radius: 5px;
+    }
+
+    button:hover {
+        transition: 0.5s;
+        cursor: pointer;
+        background-color: var(--image-background-dark);
+        padding: 1px 6px;
+        margin: 2px 2px;
+    }
 
     p {
         color: var(--text);
         font-size: 2vh;
     }
-
-    button {
-        margin-bottom: 4vh;
-    }
 }
 
 body {
-    background-color: var(--card-background);
+    background-color: var(--dashboard-background);
 }

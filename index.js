@@ -5,7 +5,7 @@ const fs = require("fs");
 const https = require("https");
 const path = require("path");
 const sqlite3 = require("sqlite3");
-const dbPath = process.env.DB_PATH /*path.join(__dirname, "database", "database.sqlite")*/;
+const dbPath = /*process.env.DB_PATH*/ path.join(__dirname, "database", "database.sqlite");
 const app = express();
 const port = 3000;
 const metabaseRoutes = require("./metabase");
@@ -146,6 +146,15 @@ app.delete('/api/menu/:id', (req, res) => {
       return;
     }
     res.json({ success: true, deletedId: id });
+  });
+});
+
+app.get("/api/menu/category", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM categories", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
   });
 });
 
@@ -644,13 +653,92 @@ app.get("/api/timetables", (req, res) => {
 
 //#endregion
 
-// Start HTTPS server (if not in test mode)
-if (process.env.NODE_ENV !== "test") {
-  https.createServer(options, app).listen(port, '0.0.0.0', () => {
-    console.log(`HTTPS server running on https://0.0.0.0:${port}`);
-  });
-}
+//#region LOGIN SYSTEM
+
+app.post("/api/login", (req, res) => {
+    const { username, password } = req.body;
+    const db = new sqlite3.Database(dbPath);
+
+    db.get("SELECT * FROM users WHERE email = ?", [username], async (err, user) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+
+        if (!user) {
+            return res.status(401).json({ message: "User does not exist" });
+        }
+
+        try {
+            const isMatch = await bcrypt.compare(password, user.password_hash);
+
+            if (!isMatch) {
+                return res.status(401).json({ message: "Invalid email or password" });
+            }
+
+            // Successful login
+            res.status(200).json({
+                message: "Login successful",
+                username: user.first_name,
+                userId: user.id,
+                role: user.user_role_id,
+            });
+
+        } catch (hashError) {
+            console.error("Hash compare error:", hashError);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    });
+});
+
+app.post("/api/signup", async (req, res) => {
+    try {
+        const { first_name, last_name, user_role_id, email, password, phone } = req.body;
+        const db = new sqlite3.Database(dbPath);
+
+        if (!first_name || !last_name || !user_role_id || !email || !password || !phone) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        // Hash the password securely
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        db.run('INSERT INTO users (first_name, last_name, user_role_id, email, password_hash, phone) VALUES (?,?,?,?,?,?)', 
+          [first_name, last_name, user_role_id, email, hashedPassword, phone], 
+          function (err) {
+            if (err) {
+                if (err.message.includes("UNIQUE constraint failed")) {
+                    return res.status(409).json({ error: "Email already registered" });
+                }
+                console.error("Database error:", err);
+                return res.status(500).json({ error: "Internal server error" });
+            }
+
+            res.status(201).json({
+                id: this.lastID,
+                first_name,
+                last_name,
+                user_role_id,
+                email,
+                phone
+            });
+        });
+
+    } catch (err) {
+        console.error("Signup error:", err);
+        res.status(500).json({ error: "Failed to create user" + err.message });
+    }
+});
+
+//#endregion
+/*
+// Start HTTPS server
+https.createServer(options, app).listen(port, '0.0.0.0', () => {
+  console.log(`HTTPS server running on https://0.0.0.0:${port}`);
+});
+*/
 //#endregion
 
-// Export app for integration testing
-module.exports = app;
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
