@@ -322,6 +322,34 @@ app.delete('/api/reservations/:id', (req, res) => {
   });
 });
 
+app.patch('/api/reservations/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const { status } = req.body;
+
+  if (status === undefined) {
+    res.status(400).json({ error: 'One value is null' });
+    return;
+  }
+
+  db.run(
+    'UPDATE reservations SET status = ? WHERE id = ?',
+    [status, id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Item not found' });
+        return;
+      }
+        res.json({ success: true, id, status });
+    }
+  );
+});
+
+
 //#endregion
 
 //#region ORDER SYSTEM
