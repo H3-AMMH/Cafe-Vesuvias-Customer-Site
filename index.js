@@ -1,16 +1,17 @@
-require("dotenv").config();
+//require("dotenv").config();
 const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
 const sqlite3 = require("sqlite3");
+const bcrypt = require("bcrypt");
 const dbPath = /*process.env.DB_PATH*/ path.join(__dirname, "database", "database.sqlite");
 const app = express();
 const port = 3000;
 const metabaseRoutes = require("./metabase");
 app.use("/", metabaseRoutes);
-
+/*
 const db = process.env.NODE_ENV === "test"
 ? require("./database/testCafe")
 : require("./database/cafe");
@@ -25,11 +26,11 @@ if (process.env.NODE_ENV !== "test") {
     cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
   };
 }
-
+*/
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+/*
 // Api key middleware
 const apiKeyAuth = (req, res, next) => {
   const key = req.headers["x-api-key"];
@@ -47,14 +48,14 @@ const limiter = rateLimit({
 // apiKeyAuth check for valid API key
 // limiter prevents brute-force attacks
 app.use("/api", apiKeyAuth, limiter);
-
+*/
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
 // Paths
 const schemaPath = path.join(__dirname, "database", "database.sql");
 
-// ---------- DB initialization ----------
+//#region DB INITIALIZATION
 if (!fs.existsSync(dbPath)) {
   console.log(`DB at ${dbPath} does not exist!`);
   console.log("Please make sure the database file exists at the path specified in DB_PATH.");
@@ -72,9 +73,9 @@ if (!fs.existsSync(dbPath)) {
     initDb.close();
   });
 }
-// ---------- END DB initialization ----------
+//#endregion
 
-// TEST
+//#region TEST
 
 app.get("/api/users", (req, res) => {
   const db = new sqlite3.Database(dbPath);
@@ -84,6 +85,8 @@ app.get("/api/users", (req, res) => {
     db.close();
   });
 });
+
+//#endregion
 
 // Serve main page
 app.get("/", (req, res) => {
