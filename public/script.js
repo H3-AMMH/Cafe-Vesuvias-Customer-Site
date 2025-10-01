@@ -336,7 +336,7 @@ async function reloadContent() {
 
   const renderItem = (item, category) => `
     <div class="container-item">
-      <p>Titel: ${item.name}</p>
+      <h2>${item.name}</h2>
       <p>Kategori: ${category}</p>
       <p>Tilgængeligt: ${AvailabilityToString(item.isAvailable)}</p>
       <p>Beskrivelse Dansk: ${item.description_danish}</p>
@@ -371,11 +371,31 @@ async function reloadContent() {
     return false;
   }
 }
+/*
+const jwt = require("jsonwebtoken");
+
+const METABASE_SITE_URL = "http://10.130.54.25:3001";
+const METABASE_SECRET_KEY = "759b14cb2dbecd0536e0534029c2df074ad6949b55f5f246455da1d7c1cab796";
+
+const payload = {
+  resource: { dashboard: 5 },
+  params: {},
+  exp: Math.round(Date.now() / 1000) + (10 * 60) // 10 minute expiration
+};
+const token = jwt.sign(payload, METABASE_SECRET_KEY);
+
+const iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token +
+  "#theme=night&bordered=true&titled=true";
+
+document.getElementById("metabase-iframe").src = iframeUrl;
+*/
+
+//#endregion
 
 //#region LOGIN PAGE LOGIC
 
 document.addEventListener("DOMContentLoaded", () => {
-	const loginButton = document.querySelector(".booking-button");
+	const loginButton = document.querySelector(".login-button");
 	loginButton.addEventListener("click", async () => {
 		const username = document.querySelector(".name-input").value.trim();
 		const password = document.querySelector(".password-input").value.trim();
