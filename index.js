@@ -7,6 +7,8 @@ const path = require("path");
 const sqlite3 = require("sqlite3");
 const bcrypt = require("bcrypt");
 const dbPath = /*process.env.DB_PATH*/ path.join(__dirname, "database", "database.sqlite");
+const jwt = require("jsonwebtoken");
+const SECRET = process.env.JWT_SECRET; // not done yet
 const app = express();
 const port = 3000;
 const metabaseRoutes = require("./metabase");
@@ -107,6 +109,16 @@ app.get("/api/menu/available", (req, res) => {
 app.get("/api/menu", (req, res) => {
   const db = new sqlite3.Database(dbPath);
   db.all("SELECT * FROM menu_items", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+app.get("/api/menu/:id", (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM menu_items WHERE id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Database error" });
     res.json(rows);
     db.close();
@@ -679,14 +691,21 @@ app.post("/api/login", (req, res) => {
                 return res.status(401).json({ message: "Invalid email or password" });
             }
 
-            // Successful login
+            // Create JWT
+            const token = jwt.sign(
+                {
+                    userId: user.id,
+                    role: user.user_role_id,
+                    username: user.first_name
+                },
+                SECRET,
+                { expiresIn: "1h" }
+            );
+
             res.status(200).json({
                 message: "Login successful",
-                username: user.first_name,
-                userId: user.id,
-                role: user.user_role_id,
+                token
             });
-
         } catch (hashError) {
             console.error("Hash compare error:", hashError);
             return res.status(500).json({ message: "Internal server error" });
@@ -694,46 +713,73 @@ app.post("/api/login", (req, res) => {
     });
 });
 
-app.post("/api/signup", async (req, res) => {
-    try {
-        const { first_name, last_name, user_role_id, email, password, phone } = req.body;
-        const db = new sqlite3.Database(dbPath);
 
-        if (!first_name || !last_name || !user_role_id || !email || !password || !phone) {
-            return res.status(400).json({ error: "Missing required fields" });
+app.post("/api/signup", async (req, res) => {
+  try {
+    const { first_name, last_name, user_role_id, email, password, phone } = req.body;
+    const db = new sqlite3.Database(dbPath);
+
+    if (!first_name || !last_name || !user_role_id || !email || !password || !phone) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Hash the password securely
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.run('INSERT INTO users (first_name, last_name, user_role_id, email, password_hash, phone) VALUES (?,?,?,?,?,?)', 
+      [first_name, last_name, user_role_id, email, hashedPassword, phone], 
+      function (err) {
+        if (err) {
+            if (err.message.includes("UNIQUE constraint failed")) {
+                return res.status(409).json({ error: "Email already registered" });
+            }
+            console.error("Database error:", err);
+            return res.status(500).json({ error: "Internal server error" });
         }
 
-        // Hash the password securely
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        db.run('INSERT INTO users (first_name, last_name, user_role_id, email, password_hash, phone) VALUES (?,?,?,?,?,?)', 
-          [first_name, last_name, user_role_id, email, hashedPassword, phone], 
-          function (err) {
-            if (err) {
-                if (err.message.includes("UNIQUE constraint failed")) {
-                    return res.status(409).json({ error: "Email already registered" });
-                }
-                console.error("Database error:", err);
-                return res.status(500).json({ error: "Internal server error" });
-            }
-
-            res.status(201).json({
-                id: this.lastID,
-                first_name,
-                last_name,
-                user_role_id,
-                email,
-                phone
-            });
+        res.status(201).json({
+            id: this.lastID,
+            first_name,
+            last_name,
+            user_role_id,
+            email,
+            phone
         });
+    });
 
-    } catch (err) {
-        console.error("Signup error:", err);
-        res.status(500).json({ error: "Failed to create user" + err.message });
-    }
+  } catch (err) {
+      console.error("Signup error:", err);
+      res.status(500).json({ error: "Failed to create user" + err.message });
+  }
+});
+
+app.get("/api/protected", authenticateToken, (req, res) => {
+  res.json({ message: "You have access!", user: req.user });
+});
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, SECRET, (err, user) => {
+      if (err) return res.sendStatus(403);
+      req.user = user;
+      next();
+  });
+}
+
+//#endregion
+
+//#region DASHBOARD SYSTEM
+
+app.get("/dashboard", authenticateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
 //#endregion
+
 /*
 // Start HTTPS server
 https.createServer(options, app).listen(port, '0.0.0.0', () => {

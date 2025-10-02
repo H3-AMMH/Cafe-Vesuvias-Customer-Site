@@ -316,8 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    reloadContent();
-
+    await reloadContent();
   } catch (err) {
     console.error("Failed to load menu:", err);
   }
@@ -335,26 +334,39 @@ async function reloadContent() {
   const categories = await categoryRes.json();
 
   const renderItem = (item, category) => `
-    <div class="container-item">
-      <p>Titel: ${item.name}</p>
+    <div class="container-item" data-id="${item.id}">
+      <h2>${item.name}</h2>
       <p>Kategori: ${category}</p>
       <p>Tilgængeligt: ${AvailabilityToString(item.isAvailable)}</p>
       <p>Beskrivelse Dansk: ${item.description_danish}</p>
       <p>Beskrivelse Engelsk: ${item.description_english}</p>
       <p>Pris: ${item.price.toFixed(2)},- DKK</p>
-      <button onclick="(async () => { 
-        await removeItem(${item.id}); 
-        await reloadContent(); 
-      })();">Slet</button>
-      <button>Rediger</button>
+      <button class="delete-btn">Slet</button>
+      <button class="edit-btn">Rediger</button>
     </div>
   `;
 
   items.forEach(item => {
-    if (FindCategoryName(item, categories))
-    {
+    if (!FindCategoryName(item, categories)) {
       itemContainer.innerHTML += renderItem(item, item.category_id.toString());
     }
+  });
+
+  itemContainer.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const container = btn.closest(".container-item");
+      const id = container.dataset.id;
+      await removeItem(id);
+      await reloadContent();
+    });
+  });
+
+  itemContainer.querySelectorAll(".edit-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const container = btn.closest(".container-item");
+      const id = container.dataset.id;
+      await editItem(id, container);
+    });
   });
 
   function AvailabilityToString(isAvailable) {
@@ -362,20 +374,82 @@ async function reloadContent() {
   }
 
   function FindCategoryName(item, categories) {
-    categories.forEach(category => {
+    for (const category of categories) {
       if (category.id === item.category_id) {
-        itemContainer.innerHTML += renderItem(item, category.name); 
+        itemContainer.innerHTML += renderItem(item, category.name);
         return true;
       }
-    });
+    }
     return false;
   }
 }
 
+async function editItem(itemId, container) {
+  try {
+    const response = await fetch(`/api/menu/${itemId}`, {
+      headers: { "X-API-KEY": getApiKey() }
+    });
+    const item = await response.json();
+
+    container.innerHTML = `
+      <h2>Titel:</h2>
+      <input value="${item.name}"><br>
+      <p>Kategori:</p>
+      <input value="${item.category_id}"><br>
+      <p>Beskrivelse Dansk:</p>
+      <input value="${item.description_danish}"><br>
+      <p>Beskrivelse Engelsk:</p>
+      <input value="${item.description_english}"><br>
+      <p>Pris:</p>
+      <input type="number" value="${item.price}"><br>
+      <button class="delete-btn">Slet</button>
+      <button class="cancel-btn">Annuller</button>
+      <button class="save-btn">Gem</button>
+    `;
+
+    // re-hook buttons inside editor
+    container.querySelector(".delete-btn").addEventListener("click", async () => {
+      await removeItem(item.id);
+      await reloadContent();
+    });
+
+    container.querySelector(".cancel-btn").addEventListener("click", async () => {
+      await reloadContent();
+    });
+
+    container.querySelector(".save-btn").addEventListener("click", async () => {
+      await reloadContent();
+    });
+  } catch (err) {
+    console.error("Failed to open editor:", err);
+  }
+}
+
+/*
+const jwt = require("jsonwebtoken");
+
+const METABASE_SITE_URL = "http://10.130.54.25:3001";
+const METABASE_SECRET_KEY = "759b14cb2dbecd0536e0534029c2df074ad6949b55f5f246455da1d7c1cab796";
+
+const payload = {
+  resource: { dashboard: 5 },
+  params: {},
+  exp: Math.round(Date.now() / 1000) + (10 * 60) // 10 minute expiration
+};
+const token = jwt.sign(payload, METABASE_SECRET_KEY);
+
+const iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token +
+  "#theme=night&bordered=true&titled=true";
+
+document.getElementById("metabase-iframe").src = iframeUrl;
+*/
+
+//#endregion
+
 //#region LOGIN PAGE LOGIC
 
 document.addEventListener("DOMContentLoaded", () => {
-	const loginButton = document.querySelector(".booking-button");
+	const loginButton = document.querySelector(".login-button");
 	loginButton.addEventListener("click", async () => {
 		const username = document.querySelector(".name-input").value.trim();
 		const password = document.querySelector(".password-input").value.trim();
@@ -395,11 +469,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				}),
 			});
 			if (res.ok) {
-				const data = await res.json();
-				// You could trigger a refresh of staff data here
-				// or redirect to a protected page
-				window.location.href = "./dashboard.html";
-			} else {
+          const data = await res.json();
+          localStorage.setItem("token", data.token);
+          window.location.href = "./dashboard.html";
+      } else {
 				console.error("Login failed:", await res.text());
 				alert("Invalid username or password.");
 			}
@@ -409,6 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 });
+
 async function signupUser(first_name, last_name, email, password, phone, user_role_id) {
 	if (!first_name || !last_name || !email || !password || !phone || !user_role_id) {
 		alert("Please fill out all fields.");
@@ -445,9 +519,6 @@ async function signupUser(first_name, last_name, email, password, phone, user_ro
 
 //#endregion
 
-//#endregion
-
-// Helper to get API key from meta tag
 function getApiKey() {
   const meta = document.querySelector('meta[name="api-key"]');
   return meta ? meta.content : "";

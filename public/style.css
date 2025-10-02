@@ -284,7 +284,7 @@ h4 {
 
 /*#endregion Media Queries*/
 
-/* Booking Form Styling */
+/*#region Booking Page*/
 .wrapper {
     display: flex;
     flex-direction: column;
@@ -354,3 +354,25 @@ h4 {
     background-color: #8b6147;
 }
 
+/*#endregion Booking Page*/
+
+/*#region Login Page*/
+
+.login-button {
+    background-color: var(--image-background);
+    color: white;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: fit-content;
+    align-self: center;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover {
+    background-color: #8b6147;
+}
+
+/*#endregion Login Page*/
