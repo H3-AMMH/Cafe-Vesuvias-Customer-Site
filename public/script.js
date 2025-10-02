@@ -344,14 +344,14 @@ async function reloadContent() {
       <p>Pris: ${item.price.toFixed(2)},- DKK</p>
       <button onclick="(async () => { 
         await removeItem(${item.id}); 
-        await reloadContent(); 
+        await reloadContent();
       })();">Slet</button>
-      <button>Rediger</button>
+      <button onclick="editItem(${item.id})">Rediger</button>
     </div>
   `;
 
   items.forEach(item => {
-    if (FindCategoryName(item, categories))
+    if (!FindCategoryName(item, categories))
     {
       itemContainer.innerHTML += renderItem(item, item.category_id.toString());
     }
@@ -371,6 +371,30 @@ async function reloadContent() {
     return false;
   }
 }
+
+function editItem(item) {
+  const renderItem = (item) => `
+      <h2>Titel:</h2>
+      <input value="${item.name}"></input><br>
+      <p>Kategori:</p>
+      <input value="${item.category_id}"></input><br>
+      <p>Beskrivelse Dansk:</p>
+      <input value="${item.description_danish}"></input><br>
+      <p>Beskrivelse Engelsk:</p>
+      <input value="${item.description_english}"></input><br>
+      <p>Pris:</p>
+      <input value="${item.price} type="number"></input><br>
+      <button onclick="(async () => { 
+        await removeItem(${item.id}); 
+        await reloadContent();
+      })();">Slet</button>
+      <button>Annuller</button>
+      <button>Gem</button>
+  `;
+
+  event.target.parentElement.innerHTML = renderItem(item);
+}
+
 /*
 const jwt = require("jsonwebtoken");
 

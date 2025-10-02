@@ -31,14 +31,22 @@
             </header>
         </div>
         <div class="main-container">
+            <div class="edit-item-container" id="edit-item-container">
+                <div class="body-shadow"></div>
+                <div class="edit-item"></div>
+            </div>
             <div class="item-container" id="main-container">
                 <div class="container-item">
-                    <h2>${item.name}</h2>
-                    <p>Kategori: ${category}</p>
-                    <p>Tilgængeligt: ${AvailabilityToString(item.isAvailable)}</p>
-                    <p>Beskrivelse Dansk: ${item.description_danish}</p>
-                    <p>Beskrivelse Engelsk: ${item.description_english}</p>
-                    <p>Pris: ${item.price.toFixed(2)},- DKK</p>
+                    <h2>Titel:</h2>
+                    <input></input><br>
+                    <p>Kategori:</p>
+                    <input></input><br>
+                    <p>Beskrivelse Dansk:</p>
+                    <input></input><br>
+                    <p>Beskrivelse Engelsk:</p>
+                    <input></input><br>
+                    <p>Pris:</p>
+                    <input></input><br>
                     <button>Slet</button>
                     <button>Rediger</button>
                 </div>
