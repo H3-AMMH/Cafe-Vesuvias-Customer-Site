@@ -4,9 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const dishesCol = document.getElementById("menu-dish-column");
   if (drinksCol && dishesCol) {
     try {
-      const response = await fetch("/api/menu/available", {
-        headers: { "X-API-KEY": getApiKey() }
-      });
+      const response = await fetch("/api/menu/available");
       const items = await response.json();
 
       const renderItem = (item) => `
@@ -35,8 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function removeItem(id) {
   const res = await fetch(`/api/menu/${id}`, {
-    method: 'DELETE',
-    headers: { "X-API-KEY": getApiKey() }
+    method: 'DELETE'
   });
   if (res.ok) {
     await fetch("/api/menu/");
@@ -48,7 +45,7 @@ async function removeItem(id) {
 async function addItem(name, category_id, description_danish, description_english, price) {
   const res = await fetch('/api/menu', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, category_id, description_danish, description_english, price })
   });
   if (res.ok) {
@@ -61,7 +58,7 @@ async function addItem(name, category_id, description_danish, description_englis
 async function updateItem(name, category_id, description_danish, description_english, price, id) {
   const res = await fetch(`/api/menu/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, category_id, description_danish, description_english, price })
   });
   if (res.ok) {
@@ -90,8 +87,7 @@ async function updateItem(isAvailable, id) {
 
 async function removeReservation(id) {
   const res = await fetch(`/api/reservation/${id}`, {
-    method: 'DELETE',
-    headers: { "X-API-KEY": getApiKey() }
+    method: 'DELETE'
   });
   if (res.ok) {
     await fetch("/api/reservation/");
@@ -104,7 +100,7 @@ async function addReservation(phone, table_id, date, time) {
   reservation_time = `${date} ${time}`;
   const res = await fetch('/api/reservation', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({phone, table_id, reservation_time})
   });
   if (res.ok) {
@@ -118,7 +114,7 @@ async function updateReservation(phone, table_id, date, time, id) {
   reservation_time = `${date} ${time}`;
   const res = await fetch(`/api/reservation/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({phone, table_id, reservation_time})
   });
   if (res.ok) {
@@ -134,8 +130,7 @@ async function updateReservation(phone, table_id, date, time, id) {
 
 async function removeOrder(id) {
   const res = await fetch(`/api/orders/${id}`, {
-    method: 'DELETE',
-    headers: { "X-API-KEY": getApiKey() }
+    method: 'DELETE'
   });
   //${id}
   if (res.ok) {
@@ -148,7 +143,7 @@ async function removeOrder(id) {
 async function addOrder(reservation_id, table_id) {
   const res = await fetch('/api/orders', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reservation_id, table_id })
   });
   if (res.ok) {
@@ -162,7 +157,7 @@ async function updateOrder(reservation_id, table_id, status, id) {
   try {
     const res = await fetch(`/api/orders/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         reservation_id,
         table_id,
@@ -190,8 +185,7 @@ async function updateOrder(reservation_id, table_id, status, id) {
 
 async function removeOrderLine(id) {
   const res = await fetch(`/api/orderlines/${id}`, {
-    method: 'DELETE',
-    headers: { "X-API-KEY": getApiKey() }
+    method: 'DELETE'
   });
   //${id}
   if (res.ok) {
@@ -204,7 +198,7 @@ async function removeOrderLine(id) {
 async function addOrderLine(order_id, menu_item_id, quantity, unit_price) {
   const res = await fetch('/api/orderlines', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({order_id, menu_item_id, quantity, unit_price})
   });
   if (res.ok) {
@@ -218,7 +212,7 @@ async function updateOrderLine(order_id, menu_item_id, quantity, unit_price, id)
   try {
     const res = await fetch(`/api/orderlines/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         order_id, menu_item_id, quantity, unit_price
       })
@@ -293,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const res = await fetch("/api/reservations", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-API-KEY": getApiKey() },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, tel, date, time, party_size })
         });
         const data = await res.json();
@@ -312,8 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 //#endregion
 
-// Helper to get API key from meta tag
-function getApiKey() {
-  const meta = document.querySelector('meta[name="api-key"]');
+function getPublicApiKey() {
+  const meta = document.querySelector('meta[name="public-api-key"]');
   return meta ? meta.content : "";
 }

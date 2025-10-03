@@ -9,13 +9,17 @@ const dbPath = process.env.DB_PATH /*path.join(__dirname, "database", "database.
 const app = express();
 const port = 3000;
 const metabaseRoutes = require("./metabase");
+const { body, validationResult } = require('express-validator');
+
 app.use("/", metabaseRoutes);
 
-const db = process.env.NODE_ENV === "test"
-? require("./database/testCafe")
-: require("./database/cafe");
 
-module.exports = { app, db };
+// Uncomment when running tests
+// const db = process.env.NODE_ENV === "test"
+// ? require("./database/testCafe")
+// : require("./database/cafe");
+
+// module.exports = { app, db };
 
 // Reads SSL cert and key
 let options;
@@ -44,9 +48,20 @@ const limiter = rateLimit({
   max: 100,
 });
 
-// apiKeyAuth check for valid API key
-// limiter prevents brute-force attacks
-app.use("/api", apiKeyAuth, limiter);
+// Public endpoint: allow GET /api/menu/available without API key
+app.get("/api/menu/available", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM menu_items WHERE isAvailable = 1", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+// Only protect sensitive endpoints (all other /api/menu routes)
+app.use("/api/menu", apiKeyAuth, limiter);
+app.use("/api/orders", apiKeyAuth, limiter);
+app.use("/api/orderlines", apiKeyAuth, limiter);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
@@ -110,9 +125,24 @@ app.get("/api/menu", (req, res) => {
   });
 });
 
-app.post('/api/menu', (req, res) => {
-  const { name, category_id, description_danish, description_english, price, isAvailable } = req.body;
-  const db = new sqlite3.Database(dbPath);
+// This endpoint includes validation using express-validator
+app.post('/api/menu',
+  [
+    body('name').notEmpty().withMessage('Name is required'),
+    body('category_id').isInt().withMessage('Category ID must be an integer'),
+    body('description_danish').notEmpty().withMessage('Danish description is required'),
+    body('description_english').notEmpty().withMessage('English description is required'),
+    body('price').isFloat({ gt: 0 }).withMessage('Price must be a number greater than 0'),
+    body('isAvailable').isBoolean().withMessage('isAvailable must be a boolean')
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, category_id, description_danish, description_english, price, isAvailable } = req.body;
+    const db = new sqlite3.Database(dbPath);
 
   if (!name || !category_id || !description_danish || !description_english || price === undefined || isAvailable === undefined) {
     res.status(400).json({ error: 'Name and price are required' });
@@ -653,4 +683,5 @@ if (process.env.NODE_ENV !== "test") {
 //#endregion
 
 // Export app for integration testing
-module.exports = app;
+// Uncomment when running tests
+// module.exports = app;
