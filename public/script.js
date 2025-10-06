@@ -55,11 +55,11 @@ async function addItem(name, category_id, description_danish, description_englis
   }
 };
 
-async function updateItem(name, category_id, description_danish, description_english, price, id) {
+async function updateItemFull(name, category_id, description_danish, description_english, price, isAvailable, id) {
   const res = await fetch(`/api/menu/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, category_id, description_danish, description_english, price })
+    headers: { 'Content-Type': 'application/json', "X-API-KEY": getPublicApiKey() },
+    body: JSON.stringify({ name, category_id, description_danish, description_english, price, isAvailable })
   });
   if (res.ok) {
     await fetch("/api/menu/");
@@ -310,3 +310,32 @@ function getPublicApiKey() {
   const meta = document.querySelector('meta[name="public-api-key"]');
   return meta ? meta.content : "";
 }
+
+//#region DASHBOARD LOGIC
+
+
+//#endregion
+
+//#region JW TOKEN LOGIC
+
+const jwt = require("jsonwebtoken");
+
+const METABASE_SITE_URL = "http://10.130.54.25:3001";
+const METABASE_SECRET_KEY = "759b14cb2dbecd0536e0534029c2df074ad6949b55f5f246455da1d7c1cab796";
+
+const payload = {
+  resource: { dashboard: 5 },
+  params: {},
+  exp: Math.round(Date.now() / 1000) + (10 * 60) // 10 minute expiration
+};
+const token = jwt.sign(payload, METABASE_SECRET_KEY);
+
+const iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token +
+  "#theme=night&bordered=true&titled=true";
+
+document.getElementById("metabase-iframe").src = iframeUrl;
+
+//#endregion
+
+//#region LOGIN PAGE LOGIC
+//#endregion
