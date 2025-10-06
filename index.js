@@ -8,7 +8,7 @@ const sqlite3 = require("sqlite3");
 const bcrypt = require("bcrypt");
 const dbPath = /*process.env.DB_PATH*/ path.join(__dirname, "database", "database.sqlite");
 const jwt = require("jsonwebtoken");
-const SECRET = process.env.JWT_SECRET; // not done yet
+const SECRET = "16af4443f4f8df0896769e150ff81d8a3e8e39d743e9351ca58225e523646ef6 "/*process.env.JWT_SECRET;*/ // not done yet, token secret is for testing
 const app = express();
 const port = 3000;
 const metabaseRoutes = require("./metabase");
@@ -77,19 +77,6 @@ if (!fs.existsSync(dbPath)) {
 }
 //#endregion
 
-//#region TEST
-
-app.get("/api/users", (req, res) => {
-  const db = new sqlite3.Database(dbPath);
-  db.all("SELECT * FROM users", [], (err, rows) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    res.json(rows);
-    db.close();
-  });
-});
-
-//#endregion
-
 // Serve main page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -126,23 +113,23 @@ app.get("/api/menu/:id", (req, res) => {
 });
 
 app.post('/api/menu', (req, res) => {
-  const { name, category_id, description_danish, description_english, price, isAvailable } = req.body;
+  const { name, category_id, description_danish, description_english, price } = req.body;
   const db = new sqlite3.Database(dbPath);
 
-  if (!name || !category_id || !description_danish || !description_english || price === undefined || isAvailable === undefined) {
+  if (!name || !category_id || !description_danish || !description_english || price === undefined) {
     res.status(400).json({ error: 'Name and price are required' });
     return;
   }
 
   db.run(
-    'INSERT INTO menu_items (name, category_id, description_danish, description_english, price, isAvailable) VALUES (?, ?, ?, ?, ?, ?)',
-    [name, category_id, description_danish, description_english, price, isAvailable],
+    'INSERT INTO menu_items (name, category_id, description_danish, description_english, price) VALUES (?, ?, ?, ?, ?)',
+    [name, category_id, description_danish, description_english, price],
     function (err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
-      res.json({ id: this.lastID, name, category_id, description_danish, description_english, price, isAvailable });
+      res.json({ id: this.lastID, name, category_id, description_danish, description_english, price });
     }
   );
 });
@@ -161,15 +148,6 @@ app.delete('/api/menu/:id', (req, res) => {
       return;
     }
     res.json({ success: true, deletedId: id });
-  });
-});
-
-app.get("/api/menu/category", (req, res) => {
-  const db = new sqlite3.Database(dbPath);
-  db.all("SELECT * FROM categories", [], (err, rows) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    res.json(rows);
-    db.close();
   });
 });
 
@@ -227,6 +205,29 @@ app.patch('/api/menu/:id', (req, res) => {
       res.json({ success: true, updatedValues: isAvailable, id });
     }
   );
+});
+
+//#endregion
+
+//#region MENU CATEGORY SYSTEM
+
+app.get("/api/menu/category", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM categories", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+app.get("/api/menu/category/:id", (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM categories WHERE id = ?", [id], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
 });
 
 //#endregion
@@ -671,46 +672,46 @@ app.get("/api/timetables", (req, res) => {
 //#region LOGIN SYSTEM
 
 app.post("/api/login", (req, res) => {
-    const { username, password } = req.body;
-    const db = new sqlite3.Database(dbPath);
+  const { username, password } = req.body;
+  const db = new sqlite3.Database(dbPath);
 
-    db.get("SELECT * FROM users WHERE email = ?", [username], async (err, user) => {
-        if (err) {
-            console.error("Database error:", err);
-            return res.status(500).json({ message: "Internal server error" });
-        }
+  db.get("SELECT * FROM users WHERE email = ?", [username], async (err, user) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
 
-        if (!user) {
-            return res.status(401).json({ message: "User does not exist" });
-        }
+    if (!user) {
+      return res.status(401).json({ message: "User does not exist" });
+    }
 
-        try {
-            const isMatch = await bcrypt.compare(password, user.password_hash);
+    try {
+      const isMatch = await bcrypt.compare(password, user.password_hash);
 
-            if (!isMatch) {
-                return res.status(401).json({ message: "Invalid email or password" });
-            }
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
 
-            // Create JWT
-            const token = jwt.sign(
-                {
-                    userId: user.id,
-                    role: user.user_role_id,
-                    username: user.first_name
-                },
-                SECRET,
-                { expiresIn: "1h" }
-            );
+      // Create JWT
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          role: user.user_role_id,
+          username: user.first_name
+        },
+        SECRET,
+        { expiresIn: "1h" }
+      );
 
-            res.status(200).json({
-                message: "Login successful",
-                token
-            });
-        } catch (hashError) {
-            console.error("Hash compare error:", hashError);
-            return res.status(500).json({ message: "Internal server error" });
-        }
-    });
+      res.status(200).json({
+        message: "Login successful",
+        token
+      });
+    } catch (hashError) {
+      console.error("Hash compare error:", hashError);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 });
 
 
@@ -752,6 +753,10 @@ app.post("/api/signup", async (req, res) => {
       res.status(500).json({ error: "Failed to create user" + err.message });
   }
 });
+
+//#endregion
+
+//#region JW TOKEN SYSTEM
 
 app.get("/api/protected", authenticateToken, (req, res) => {
   res.json({ message: "You have access!", user: req.user });

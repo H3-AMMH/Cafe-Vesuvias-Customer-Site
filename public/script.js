@@ -58,11 +58,11 @@ async function addItem(name, category_id, description_danish, description_englis
   }
 };
 
-async function updateItem(name, category_id, description_danish, description_english, price, id) {
+async function updateItemFull(name, category_id, description_danish, description_english, price, isAvailable, id) {
   const res = await fetch(`/api/menu/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', "X-API-KEY": getApiKey() },
-    body: JSON.stringify({ name, category_id, description_danish, description_english, price })
+    body: JSON.stringify({ name, category_id, description_danish, description_english, price, isAvailable })
   });
   if (res.ok) {
     await fetch("/api/menu/");
@@ -314,117 +314,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 //#region DASHBOARD LOGIC
 
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    await reloadContent();
-  } catch (err) {
-    console.error("Failed to load menu:", err);
-  }
-});
 
-async function reloadContent() {
-  const itemContainer = document.getElementById("main-container");
+//#endregion
 
-  const menuRes = await fetch("/api/menu/");
-  const items = await menuRes.json();
-
-  itemContainer.innerHTML = "";
-
-  const categoryRes = await fetch("/api/menu/category/");
-  const categories = await categoryRes.json();
-
-  const renderItem = (item, category) => `
-    <div class="container-item" data-id="${item.id}">
-      <h2>${item.name}</h2>
-      <p>Kategori: ${category}</p>
-      <p>Tilgængeligt: ${AvailabilityToString(item.isAvailable)}</p>
-      <p>Beskrivelse Dansk: ${item.description_danish}</p>
-      <p>Beskrivelse Engelsk: ${item.description_english}</p>
-      <p>Pris: ${item.price.toFixed(2)},- DKK</p>
-      <button class="delete-btn">Slet</button>
-      <button class="edit-btn">Rediger</button>
-    </div>
-  `;
-
-  items.forEach(item => {
-    if (!FindCategoryName(item, categories)) {
-      itemContainer.innerHTML += renderItem(item, item.category_id.toString());
-    }
-  });
-
-  itemContainer.querySelectorAll(".delete-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const container = btn.closest(".container-item");
-      const id = container.dataset.id;
-      await removeItem(id);
-      await reloadContent();
-    });
-  });
-
-  itemContainer.querySelectorAll(".edit-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const container = btn.closest(".container-item");
-      const id = container.dataset.id;
-      await editItem(id, container);
-    });
-  });
-
-  function AvailabilityToString(isAvailable) {
-    return isAvailable === 1 ? "Ja" : "Nej";
-  }
-
-  function FindCategoryName(item, categories) {
-    for (const category of categories) {
-      if (category.id === item.category_id) {
-        itemContainer.innerHTML += renderItem(item, category.name);
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
-async function editItem(itemId, container) {
-  try {
-    const response = await fetch(`/api/menu/${itemId}`, {
-      headers: { "X-API-KEY": getApiKey() }
-    });
-    const item = await response.json();
-
-    container.innerHTML = `
-      <h2>Titel:</h2>
-      <input value="${item.name}"><br>
-      <p>Kategori:</p>
-      <input value="${item.category_id}"><br>
-      <p>Beskrivelse Dansk:</p>
-      <input value="${item.description_danish}"><br>
-      <p>Beskrivelse Engelsk:</p>
-      <input value="${item.description_english}"><br>
-      <p>Pris:</p>
-      <input type="number" value="${item.price}"><br>
-      <button class="delete-btn">Slet</button>
-      <button class="cancel-btn">Annuller</button>
-      <button class="save-btn">Gem</button>
-    `;
-
-    // re-hook buttons inside editor
-    container.querySelector(".delete-btn").addEventListener("click", async () => {
-      await removeItem(item.id);
-      await reloadContent();
-    });
-
-    container.querySelector(".cancel-btn").addEventListener("click", async () => {
-      await reloadContent();
-    });
-
-    container.querySelector(".save-btn").addEventListener("click", async () => {
-      await reloadContent();
-    });
-  } catch (err) {
-    console.error("Failed to open editor:", err);
-  }
-}
-
+//#region JW TOKEN LOGIC
 /*
 const jwt = require("jsonwebtoken");
 
@@ -443,79 +336,11 @@ const iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token +
 
 document.getElementById("metabase-iframe").src = iframeUrl;
 */
-
 //#endregion
 
 //#region LOGIN PAGE LOGIC
 
-document.addEventListener("DOMContentLoaded", () => {
-	const loginButton = document.querySelector(".login-button");
-	loginButton.addEventListener("click", async () => {
-		const username = document.querySelector(".name-input").value.trim();
-		const password = document.querySelector(".password-input").value.trim();
-		if (!username || !password) {
-			alert("Please enter both username and password.");
-			return;
-		}
-		try {
-			const res = await fetch("/api/login", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({
-					username,
-					password
-				}),
-			});
-			if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem("token", data.token);
-          window.location.href = "./dashboard.html";
-      } else {
-				console.error("Login failed:", await res.text());
-				alert("Invalid username or password.");
-			}
-		} catch (err) {
-			console.error("Error logging in:", err);
-			alert("Something went wrong. Try again.");
-		}
-	});
-});
 
-async function signupUser(first_name, last_name, email, password, phone, user_role_id) {
-	if (!first_name || !last_name || !email || !password || !phone || !user_role_id) {
-		alert("Please fill out all fields.");
-		return;
-	}
-	try {
-		const res = await fetch("/api/signup", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				first_name,
-				last_name,
-				user_role_id,
-				email,
-				password,
-				phone
-			})
-		});
-		if (res.ok) {
-			const data = await res.json();
-			console.error(`Account created: ${data.first_name}`);
-			// Optionally auto-login or redirect:
-			window.location.href = "/dashboard.html";
-		} else {
-			const errorData = await res.json();
-			console.error(`Signup failed: ${errorData.error}`);
-		}
-	} catch (err) {
-		console.error("Signup error:", err);
-	}
-}
 
 //#endregion
 
