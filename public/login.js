@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const res = await fetch("/api/login", {
 				method: "POST",
 				headers: {
-					"Content-Type": "application/json"
+					'Content-Type': 'application/json', "X-API-KEY": getPublicApiKey()
 				},
 				body: JSON.stringify({
 					username,
@@ -19,10 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				}),
 			});
 			if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem("token", data.token);
-          window.location.href = "./dashboard.html";
-      } else {
+				const data = await res.json();
+				localStorage.setItem("token", data.token);
+				window.location.href = "./dashboard.html";
+			} else {
 				console.error("Login failed:", await res.text());
 				alert("Invalid username or password.");
 			}

@@ -311,11 +311,6 @@ function getPublicApiKey() {
   return meta ? meta.content : "";
 }
 
-//#region DASHBOARD LOGIC
-
-
-//#endregion
-
 //#region JW TOKEN LOGIC
 
 const jwt = require("jsonwebtoken");
@@ -335,7 +330,4 @@ const iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token +
 
 document.getElementById("metabase-iframe").src = iframeUrl;
 
-//#endregion
-
-//#region LOGIN PAGE LOGIC
 //#endregion

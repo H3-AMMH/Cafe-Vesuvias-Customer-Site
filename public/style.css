@@ -1,5 +1,3 @@
-/*#region Main*/
-
 :root {
     --header: transparent;
     --border: #353535;
@@ -12,6 +10,8 @@
     --image-background: #a67b5b;
     --image-background-dark: #594231;
 }
+
+/*#region Main*/
 
 main {
     z-index: 10;
@@ -53,17 +53,17 @@ body {
         padding: 1vw;
     }
 
+    a:hover {
+        transition-duration: 500ms;
+        font-size: 2.25vh;
+        text-decoration: underline;
+    }
+
     .burgermenu {
         width: 5vh;
         height: 5vh;
         cursor: pointer;
     }
-}
-
-.header-nav-links a:hover {
-    transition-duration: 500ms;
-    font-size: 2.25vh;
-    text-decoration: underline;
 }
 
 h1 {
@@ -99,8 +99,6 @@ h1 {
     bottom: 0;
 }
 
-/*#endregion Main*/
-
 .content-container-background {
     width: 100%;
     background-color: var(--body-background);
@@ -108,13 +106,14 @@ h1 {
     z-index: 0;
 }
 
-
 .content-container {
     width: 100%;
     background-color: var(--body-background);
     position: relative;
     z-index: 0;
 }
+
+/*#endregion Main*/
 
 /*#region Menu*/
 
@@ -166,8 +165,6 @@ h1 {
 }
 
 .menu-item {
-    /*border-style: solid;
-    border-color: var(--border);*/
     padding-left: 10%;
     padding-right: 10%;
     padding-bottom: 5%;
@@ -194,6 +191,60 @@ h4 {
 }
 
 /*#endregion Menu*/
+
+/*#region Footer*/
+
+.footer {
+    margin-top: 50px;
+    height: 250px;
+    border-top: solid var(--border);
+    background-image: linear-gradient(to bottom, var(--image-background), var(--image-background-dark));
+    display: flex;
+}
+
+.footer-container-left {
+    width: 50%;
+    display: flex;
+    justify-content: end;
+}
+
+.footer-container-right {
+    width: 50%;
+    display: flex;
+    justify-content: start;
+}
+
+.footer-text-container {
+    width: 30%;
+    min-width: 250px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.footer-left {
+    margin-right: 20%;
+}
+
+.footer-right {
+    margin-left: 20%;
+}
+
+.footer-text-container h2 {
+    color: var(--text);
+    font-size: 40px;
+    margin: 0;
+}
+
+.footer-text-container p {
+    color: var(--text);
+    font-size: 20px;
+    margin: 0;
+    margin-top: 5px;
+}
+
+/*#endregion Footer*/
 
 /*#region Animations*/
 
@@ -257,6 +308,27 @@ h4 {
         cursor: pointer;
         display: inline;
     }
+
+    .footer-text-container {
+        width: 70%;
+        min-width: 0px;
+    }
+
+    .footer-text-container h2 {
+        font-size: 30px;
+    }
+
+    .footer-text-container p {
+        font-size: 15px;
+    }
+
+    .footer-left {
+        margin-right: 15%;
+    }
+
+    .footer-right {
+        margin-left: 15%;
+    }
 }
 
 @media (min-width: 900px) and (resolution <= 200dpi) {
@@ -285,6 +357,7 @@ h4 {
 /*#endregion Media Queries*/
 
 /*#region Booking Page*/
+
 .wrapper {
     display: flex;
     flex-direction: column;

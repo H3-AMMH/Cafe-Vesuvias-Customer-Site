@@ -15,10 +15,11 @@ const metabaseRoutes = require("./metabase");
 const { body, validationResult } = require('express-validator');
 
 app.use("/", metabaseRoutes);
+/*
 const db = process.env.NODE_ENV === "test"
 ? require("./database/testCafe")
 : require("./database/cafe");
-
+*/
 // Uncomment when running tests
 // const db = process.env.NODE_ENV === "test"
 // ? require("./database/testCafe")
@@ -27,13 +28,14 @@ const db = process.env.NODE_ENV === "test"
 // module.exports = { app, db };
 
 // Reads SSL cert and key
+/*
 let options;
 if (process.env.NODE_ENV !== "test") {
   options = {
     key: fs.readFileSync("/etc/ssl/cafe-menu/server.key"),
     cert: fs.readFileSync("/etc/ssl/cafe-menu/server.crt")
   };
-}
+}*/
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
