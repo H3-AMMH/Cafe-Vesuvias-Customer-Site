@@ -6,7 +6,9 @@ const https = require("https");
 const path = require("path");
 const sqlite3 = require("sqlite3");
 const bcrypt = require("bcrypt");
-const dbPath = /*process.env.DB_PATH*/ path.join(__dirname, "database", "database.sqlite");
+const dbPath = process.env.DB_PATH
+  ? path.resolve(__dirname, process.env.DB_PATH)
+  : path.join(__dirname, "database", "database.sqlite");
 const jwt = require("jsonwebtoken");
 const SECRET = "16af4443f4f8df0896769e150ff81d8a3e8e39d743e9351ca58225e523646ef6 "/*process.env.JWT_SECRET;*/ // not done yet, token secret is for testing
 const app = express();
@@ -15,14 +17,6 @@ const metabaseRoutes = require("./metabase");
 const { body, validationResult } = require('express-validator');
 
 app.use("/", metabaseRoutes);
-const db = process.env.NODE_ENV === "test"
-? require("./database/testCafe")
-: require("./database/cafe");
-
-// Uncomment when running tests
-// const db = process.env.NODE_ENV === "test"
-// ? require("./database/testCafe")
-// : require("./database/cafe");
 
 // module.exports = { app, db };
 
@@ -784,6 +778,7 @@ app.post("/api/signup", async (req, res) => {
 // Export app for integration testing
 // Uncomment when running tests
 // module.exports = app;
+
 //#region JW TOKEN SYSTEM
 
 app.get("/api/protected", authenticateToken, (req, res) => {
