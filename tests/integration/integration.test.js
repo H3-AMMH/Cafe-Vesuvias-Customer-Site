@@ -14,12 +14,15 @@ afterAll((done) => {
 describe("Integration test: API + DB", () => {
   test("GET /api/menu returns menu items", async () => {
     await new Promise((resolve, reject) => {
-      db.run(
-        `INSERT INTO menu_items 
-        (id, name, category_id, description_danish, description_english, price, isAvailable) 
-        VALUES (1, 'Pizza Vesuvio', 1, 'En klassisk pizza med skinke og ost', 'A classic pizza with ham and cheese', 85, 1)`,
-        (err) => (err ? reject(err) : resolve())
-      );
+      db.serialize(() => {
+        db.run("DELETE FROM menu_items");
+        db.run(
+          `INSERT INTO menu_items 
+          (id, name, category_id, description_danish, description_english, price, isAvailable) 
+          VALUES (1, 'Pizza Vesuvio', 1, 'En klassisk pizza med skinke og ost', 'A classic pizza with ham and cheese', 85, 1)`,
+          (err) => (err ? reject(err) : resolve())
+        );
+      });
     });
 
     const res = await request(app)
