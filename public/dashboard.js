@@ -6,42 +6,57 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-async function reloadContent()
-{
+async function reloadContent() {
     const itemContainer = document.getElementById("main-container");
-
     itemContainer.innerHTML = "";
 
-    const menuRes = await fetch("/api/menu/");
+    // Get the token from wherever you store it (e.g., localStorage after login)
+    const token = localStorage.getItem("token"); 
+
+    const menuRes = await fetch("/api/menu", {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    if (!menuRes.ok) {
+        console.error("Failed to fetch menu:", menuRes.status);
+        return;
+    }
+
     const items = await menuRes.json();
 
     const renderItem = (item, category) => `
         <div class="container-item" data-id="${item.id}">
-        <h2>${item.name}</h2>
-        <p>Kategori: ${category.name}</p>
-        <p>Tilgængeligt?: ${AvailabilityToString(item.isAvailable)}</p>
-        <p>Beskrivelse Dansk: ${item.description_danish}</p>
-        <p>Beskrivelse Engelsk: ${item.description_english}</p>
-        <p>Pris: ${item.price.toFixed(2)},- DKK</p>
-        <button class="delete-btn">Slet</button>
-        <button class="edit-btn">Rediger</button>
+            <h2>${item.name}</h2>
+            <p>Kategori: ${category.name}</p>
+            <p>Tilgængeligt?: ${AvailabilityToString(item.isAvailable)}</p>
+            <p>Beskrivelse Dansk: ${item.description_danish}</p>
+            <p>Beskrivelse Engelsk: ${item.description_english}</p>
+            <p>Pris: ${item.price.toFixed(2)},- DKK</p>
+            <button class="delete-btn">Slet</button>
+            <button class="edit-btn">Rediger</button>
         </div>
     `;
 
     const itemsHTML = await Promise.all(items.map(async item => {
-        const categoryRes = await fetch(`/api/menu/category/${item.category_id}`);
+        const categoryRes = await fetch(`/api/menu/category/${item.category_id}`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
         const data = await categoryRes.json();
         const category = data[0];
         return renderItem(item, category);
     }));
 
-    itemContainer.innerHTML = itemsHTML.join(""); // append all at once
+    itemContainer.innerHTML = itemsHTML.join("");
 
     itemContainer.querySelectorAll(".delete-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
             const container = btn.closest(".container-item");
             const id = container.dataset.id;
-            await removeItem(id);
+            await removeItem(id, token);
             await reloadContent();
         });
     });
@@ -50,7 +65,7 @@ async function reloadContent()
         btn.addEventListener("click", async () => {
             const container = btn.closest(".container-item");
             const id = container.dataset.id;
-            await editItem(id, container);
+            await editItem(id, container, token);
         });
     });
 

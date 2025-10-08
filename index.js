@@ -71,7 +71,7 @@ app.use("/api/orderlines", apiKeyAuth, limiter);
 
 // apiKeyAuth check for valid API key
 // limiter prevents brute-force attacks
-app.use("/api", apiKeyAuth, limiter);
+//app.use("/api", apiKeyAuth, limiter);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
@@ -105,15 +105,6 @@ app.get("/", (req, res) => {
 });
 
 //#region MENU SYSTEM
-
-app.get("/api/menu/available", (req, res) => {
-  const db = new sqlite3.Database(dbPath);
-  db.all("SELECT * FROM menu_items WHERE isAvailable = 1", [], (err, rows) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    res.json(rows);
-    db.close();
-  });
-});
 
 app.get("/api/menu", (req, res) => {
   const db = new sqlite3.Database(dbPath);

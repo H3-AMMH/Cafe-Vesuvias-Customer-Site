@@ -306,11 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 //#endregion
 
-function getPublicApiKey() {
-  const meta = document.querySelector('meta[name="public-api-key"]');
-  return meta ? meta.content : "";
-}
-
 //#region JW TOKEN LOGIC
 
 const jwt = require("jsonwebtoken");

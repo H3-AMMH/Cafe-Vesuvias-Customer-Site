@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const res = await fetch("/api/login", {
 				method: "POST",
 				headers: {
-					'Content-Type': 'application/json', "X-API-KEY": getPublicApiKey()
+					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
 					username,
