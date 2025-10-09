@@ -7,7 +7,7 @@
         <title>Reserver</title>
         <link rel="stylesheet" href="./style.css">
         <link rel="icon" href="./images/cover-image.svg" type="image/svg+xml"/>
-        <link rel="stylesheet" href="./header.html"/>
+        <script src="./script.js"></script>
         <script src="./booking.js"></script>
     </head>
     <body>
@@ -15,6 +15,9 @@
             <div class="top-container">
                 <header class="header-container header-fade-in-animation">
                     <h1 class="header-text">Café Vesuvius</h1>
+                    <div class="header-nav-links nav-link-left">
+                        <a href="./">Tilbage</a>
+                    </div>
                 </header>
                 <img src="./images/cover-image.svg" alt="well shit"
                     class="cover-image cover-image-load-drop-animation">
@@ -24,17 +27,17 @@
             <div class="wrapper">
                 <h1 class="header1">Reserver</h1>
                 <label class="name-label">Navn:</label>
-                <input class="name-input" type="text" placeholder="Navn"
+                <input id="name-input" class="name-input" type="text" placeholder="Navn"
                     required>
                 <label class="tlf-label">Telefon nummer:</label>
-                <input class="tlf-input" type="tel"
+                <input id="tlf-input" class="tlf-input" type="tel"
                     placeholder="Telefon nummer" required>
                 <label class="bord-label">Hvor mange kommer:</label>
-                <input class="bord-input" max="56" type="number" required>
+                <input id="bord-input" class="bord-input" max="56" type="number" required>
                 <label class="dato-label">Hvornår:</label>
-                <input class="dato-input" type="date" required>
+                <input id="dato-input" class="dato-input" type="date" required>
 
-                <input class="tidspunkt-input" type="time" required>
+                <select id="timetable-select" required></select>
 
                 <!--<label class="menu-label">Hvad vil du bestile</label>
                 <input class="menu-input" type="text">
@@ -47,7 +50,7 @@
                     <optgroup label="Drikkelse menu">
                         <option value="1">Moscow Mule</option>
                     </optgroup>-->
-                <button class="booking-button">Reserver</button>
+                <button id="booking-button" class="booking-button">Reserver</button>
             </div>
         </main>
     </body>

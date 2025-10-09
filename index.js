@@ -1,4 +1,4 @@
-//require("dotenv").config();
+require("dotenv").config();
 const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fs = require("fs");
@@ -51,7 +51,16 @@ const apiKeyAuth = (req, res, next) => {
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100,
+  max: 200,
+});
+
+app.get("/api/key", authenticateToken, (req, res) => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: "API key not configured" });
+  }
+
+  res.json({ apiKey });
 });
 
 // Public endpoint: allow GET /api/menu/available without API key
@@ -68,10 +77,12 @@ app.get("/api/menu/available", (req, res) => {
 app.use("/api/menu", apiKeyAuth, limiter);
 app.use("/api/orders", apiKeyAuth, limiter);
 app.use("/api/orderlines", apiKeyAuth, limiter);
+app.use("/api/roles", apiKeyAuth, limiter);
+app.use("/api/users", apiKeyAuth, limiter);
 
 // apiKeyAuth check for valid API key
 // limiter prevents brute-force attacks
-//app.use("/api", apiKeyAuth, limiter);
+app.use("/api", limiter);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
@@ -104,11 +115,122 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+//#region USER SYSTEM
+
+app.get("/api/users", (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  const query = `
+    SELECT id, first_name, last_name, user_role_id, email, phone
+    FROM users
+  `;
+
+  db.all(query, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+app.get("/api/users/:id", (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const query = `
+    SELECT id, first_name, last_name, user_role_id, email, phone
+    FROM users WHERE id = ?
+  `;
+
+  db.all(query, [id], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+app.delete('/api/users/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+
+  db.run('DELETE FROM users WHERE id = ?', [id], function (err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    if (this.changes === 0) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    res.json({ success: true, deletedId: id });
+  });
+});
+
+app.patch('/api/users/:id', (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  const { first_name, last_name, user_role_id, email, phone } = req.body;
+
+  if (!first_name || !last_name || !user_role_id === undefined || !email || !phone) {
+    res.status(400).json({ error: 'One or more values are null' });
+    return;
+  }
+
+  db.run(
+    'UPDATE users SET first_name = ?, last_name = ?, user_role_id = ?, email = ?, phone = ? WHERE id = ?',
+    [first_name, last_name, user_role_id, email, phone, id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      res.json({ success: true, updatedValues: first_name, last_name, user_role_id, email, phone, id });
+    }
+  );
+});
+
+//#endregion
+
+//#region ROLE SYSTEM
+
+app.get("/api/roles", (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM user_roles", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+app.get("/api/roles/:id", (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM user_roles WHERE id = ?", [id], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+//#endregion
+
 //#region MENU SYSTEM
 
 app.get("/api/menu", (req, res) => {
   const db = new sqlite3.Database(dbPath);
   db.all("SELECT * FROM menu_items", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json(rows);
+    db.close();
+  });
+});
+
+app.get("/api/menu/:id", (req, res) => {
+  const id = req.params.id;
+  const db = new sqlite3.Database(dbPath);
+  db.all("SELECT * FROM menu_items WHERE id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Database error" });
     res.json(rows);
     db.close();
@@ -122,8 +244,7 @@ app.post('/api/menu',
     body('category_id').isInt().withMessage('Category ID must be an integer'),
     body('description_danish').notEmpty().withMessage('Danish description is required'),
     body('description_english').notEmpty().withMessage('English description is required'),
-    body('price').isFloat({ gt: 0 }).withMessage('Price must be a number greater than 0'),
-    body('isAvailable').isBoolean().withMessage('isAvailable must be a boolean')
+    body('price').isFloat({ gt: 0 }).withMessage('Price must be a number greater than 0')
   ],
   (req, res) => {
     const errors = validationResult(req);
@@ -131,7 +252,7 @@ app.post('/api/menu',
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, category_id, description_danish, description_english, price, isAvailable } = req.body;
+    const { name, category_id, description_danish, description_english, price } = req.body;
     const db = new sqlite3.Database(dbPath);
 
   if (!name || !category_id || !description_danish || !description_english || price === undefined) {
@@ -278,7 +399,7 @@ app.get("/api/reservations", (req, res) => {
 // Reservation creation: assign tables automatically
 app.post('/api/reservations', (req, res) => {
   const { name, tel, date, time, party_size } = req.body;
-  if (!name || !tel || !date || !time || !party_size) {
+  if (!name || !tel || !date || !time || !party_size === undefined) {
     return res.status(400).json({ error: "Missing required fields" });
   }
   const partySizeInt = parseInt(party_size, 10);

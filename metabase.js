@@ -10,21 +10,13 @@ router.get("/metabase-dashboard", (req, res) => {
   const payload = {
     resource: { dashboard: 1 },
     params: {},
-    exp: Math.floor(Date.now() / 1000) + 60 * 10, // 10 min expiry
+    exp: Math.floor(Date.now() / 1000) + 60 * 10,
   };
-
   const token = jwt.sign(payload, METABASE_SECRET_KEY);
   const iframeUrl = `${METABASE_SITE_URL}/embed/dashboard/${token}#bordered=true&titled=true`;
 
-  res.send(`
-    <iframe
-      src="${iframeUrl}"
-      frameborder="0"
-      width="100%"
-      height="800"
-      allowtransparency
-    ></iframe>
-  `);
+  // return JSON instead of HTML
+  res.json({ url: iframeUrl });
 });
 
 module.exports = router;

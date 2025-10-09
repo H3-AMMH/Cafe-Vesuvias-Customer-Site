@@ -1,60 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="description" content="Café Vesuvius">
-    <meta name="keywords" content="CAFE, CAFE VESUVIUS, MENU, RESERVATION">
-    <meta name="author" content="Marcus Nielsen, Martin Hansen, Alexander Gade, Halfdan Monie">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Café Vesuvias</title>
-    <link rel="stylesheet" href="./style.css">
-    <link rel="stylesheet" href="./dashboard.css">
-    <link rel="icon" href="./images/cover-image.svg" type="image/svg+xml">
-    <script src="./script.js"></script>
-    <script src="./dashboard.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.2/lottie.min.js"></script>
-    <script src="./animations/burgermenu.js"></script>
-</head>
-
-<body>
-    <main>
-        <div class="top-container">
-            <header class="header-container">
-                <h1 class="header-text">Café Vesuvius</h1>
-                <div class="header-nav-links">
-                    <a >Log Out</a>
-                    <div class="burgermenu"></div>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="description" content="Café Vesuvius">
+        <meta name="keywords" content="CAFE, CAFE VESUVIUS, MENU, RESERVATION">
+        <meta name="author" content="Marcus Nielsen, Martin Hansen, Alexander Gade, Halfdan Monie">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Café Vesuvias</title>
+        <link rel="stylesheet" href="./style.css">
+        <link rel="stylesheet" href="./dashboard.css">
+        <link rel="icon" href="./images/cover-image.svg" type="image/svg+xml">
+        <script src="./script.js"></script>
+        <script src="./dashboard.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.2/lottie.min.js"></script>
+        <script src="./animations/burgermenu.js"></script>
+    </head>
+    <body>
+        <main>
+            <div class="top-container">
+                <header class="header-container">
+                    <h1 class="header-text">Café Vesuvius</h1>
+                    <div class="header-nav-links">
+                        <a id="log-out-button" class="log-out-button">Log Out</a>
+                        <div class="burgermenu"></div>
+                    </div>
+                </header>
+            </div>
+            <div class="main-container">
+                <div class="main-item-container">
+                    <button id="create-item-button" class="create-item-button">Opret Ny</button>
+                    <div class="item-container" id="main-container">
+                    </div>
                 </div>
-            </header>
-        </div>
-        <div class="main-container">
-            <div class="main-item-container">
-                <button class="create-item-button" onclick="newItem()">Opret Ny</button>
-                <div class="item-container" id="main-container">
-                    <div class="container-item">
-                        <h2>Titel:</h2>
-                        <textarea></textarea><br>
-                        <p>Kategori:</p>
-                        <textarea></textarea><br>
-                        <p>Beskrivelse Dansk:</p>
-                        <textarea></textarea><br>
-                        <p>Beskrivelse Engelsk:</p>
-                        <textarea></textarea><br>
-                        <p>Pris:</p>
-                        <input><br>
-                        <button>Slet</button>
-                        <button>Rediger</button>
+                <div class="secondary-container">
+                    <div class="metabase-embed">
+                        <iframe id="metabase-iframe" frameborder="0" class="metabase-iframe"></iframe>
+                    </div>
+                    <div class="main-user-container">
+                        <button id="create-user-button" class="create-user-button">Opret Ny Bruger</button>
+                        <div class="user-container" id="user-container">
+                            <div class="user-entry">
+                                <h2>Navn:</h2>
+                                <input><br>
+                                <p>Rolle:</p>
+                                <select></select><br>
+                                <p>E-mail:</p>
+                                <input><br>
+                                <p>Tlf:</p>
+                                <input><br>
+                                <button class="delete-btn">Slet</button>
+                                <button class="edit-btn">Rediger</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="metabase-container">
-                <div class="metabase-embed">
-                    <iframe id="metabase-iframe" frameborder="0" class="metabase-iframe"></iframe>
-                </div>
-            </div>
-        </div>
-    </main>
-</body>
+        </main>
+    </body>
 </html>

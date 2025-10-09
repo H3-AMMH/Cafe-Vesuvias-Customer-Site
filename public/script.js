@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // Render menu items on index.html
   const drinksCol = document.getElementById("menu-drinks-column");
   const dishesCol = document.getElementById("menu-dish-column");
   if (drinksCol && dishesCol) {
@@ -31,38 +30,45 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 //#region MENU SYSTEM
 
-async function removeItem(id) {
+async function removeItem(id, apiKey) {
   const res = await fetch(`/api/menu/${id}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: { "x-api-key": apiKey }
   });
   if (res.ok) {
-    await fetch("/api/menu/");
+    await fetch("/api/menu/", {
+      headers: { "x-api-key": apiKey }
+    });
   } else {
     console.error("Failed to delete item:", await res.text());
   }
 };
 
-async function addItem(name, category_id, description_danish, description_english, price) {
+async function addItem(name, category_id, description_danish, description_english, price, apiKey) {
   const res = await fetch('/api/menu', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', "x-api-key": apiKey },
     body: JSON.stringify({ name, category_id, description_danish, description_english, price })
   });
   if (res.ok) {
-    await fetch("/api/menu/");
+    await fetch("/api/menu/", {
+      headers: { "x-api-key": apiKey }
+    });
   } else {
     console.error("Failed to add item:", await res.text());
   }
 };
 
-async function updateItemFull(name, category_id, description_danish, description_english, price, isAvailable, id) {
+async function updateItemFull(name, category_id, description_danish, description_english, price, isAvailable, id, apiKey) {
   const res = await fetch(`/api/menu/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', "X-API-KEY": getPublicApiKey() },
+    headers: { 'Content-Type': 'application/json', "x-api-key": apiKey },
     body: JSON.stringify({ name, category_id, description_danish, description_english, price, isAvailable })
   });
   if (res.ok) {
-    await fetch("/api/menu/");
+    await fetch("/api/menu/", {
+      headers: {"x-api-key": apiKey}
+    });
   } else {
     console.error("Failed to update item:", await res.text());
   }
@@ -90,21 +96,20 @@ async function removeReservation(id) {
     method: 'DELETE'
   });
   if (res.ok) {
-    await fetch("/api/reservation/");
+    await fetch("/api/reservations/");
   } else {
     console.error("Failed to delete reservation:", await res.text());
   }
 };
 
-async function addReservation(phone, table_id, date, time) {
-  reservation_time = `${date} ${time}`;
-  const res = await fetch('/api/reservation', {
+async function addReservation(name, tel, date, time, party_size) {
+  const res = await fetch('/api/reservations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({phone, table_id, reservation_time})
+    body: JSON.stringify({name, tel, date, time, party_size})
   });
   if (res.ok) {
-    await fetch("/api/reservation/");
+    await fetch("/api/reservations/");
   } else {
     console.error("Failed to add reservation:", await res.text());
   }
@@ -112,7 +117,7 @@ async function addReservation(phone, table_id, date, time) {
 
 async function updateReservation(phone, table_id, date, time, id) {
   reservation_time = `${date} ${time}`;
-  const res = await fetch(`/api/reservation/${id}`, {
+  const res = await fetch(`/api/reservations/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({phone, table_id, reservation_time})
@@ -235,7 +240,7 @@ async function updateOrderLine(order_id, menu_item_id, quantity, unit_price, id)
 //#endregion
 
 //#region BOOKING PAGE LOGIC
-
+/*
 document.addEventListener("DOMContentLoaded", () => {
   // Populate time select if it exists
   const timeSelect = document.querySelector(".tidspunkt-input");
@@ -303,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
+*/
 //#endregion
 
 //#region JW TOKEN LOGIC
@@ -324,5 +329,102 @@ const iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token +
   "#theme=night&bordered=true&titled=true";
 
 document.getElementById("metabase-iframe").src = iframeUrl;
+
+function fetchToken() {
+  return localStorage.getItem("token");
+}
+
+//#endregion
+
+//#region API KEY LOGIC
+
+async function fetchApiKey(token) {
+    const res = await fetch("/api/key", {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch API key");
+    const data = await res.json();
+    return data.apiKey;
+}
+
+//#endregion
+
+//region USER LOGIC
+
+async function updateUser(first_name, last_name, user_role_id, email, phone, id, apiKey) {
+  const res = await fetch(`/api/users/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', "x-api-key": apiKey },
+    body: JSON.stringify({ first_name, last_name, user_role_id, email, phone })
+  });
+  if (res.ok) {
+    await fetch("/api/users/", {
+      headers: {"x-api-key": apiKey}
+    });
+  } else {
+    console.error("Failed to update user:", await res.text());
+  }
+};
+
+async function deleteUser(id, apiKey) {
+    const usersRes = await fetch("/api/users/", {
+        headers: { "x-api-key": apiKey }
+    });
+
+    if (!usersRes.ok) {
+        console.error("Failed to fetch users:", usersRes.status);
+        return;
+    }
+
+    const users = await usersRes.json();
+
+    if (!Array.isArray(users) || users.length < 2) {
+      throw new Error("There must exist another user for this user to be deleted");
+    }
+    
+    const res = await fetch(`/api/users/${id}`, {
+        method: "DELETE",
+        headers: { "x-api-key": apiKey }
+    });
+
+    if (!res.ok) {
+        console.error("Failed to delete user:", await res.text());
+    }
+}
+
+
+async function createUser(first_name, last_name, password, user_role_id, email, phone) {
+	if (!first_name || !last_name || !user_role_id || !email || !password || !phone) {
+		alert("Please fill out all fields.");
+		return;
+	}
+	try {
+		const res = await fetch("/api/signup", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				first_name,
+				last_name,
+				user_role_id,
+				email,
+				password,
+				phone
+			})
+		});
+		if (res.ok) {
+			const data = await res.json();
+		} else {
+			const errorData = await res.json();
+			console.error(`Signup failed: ${errorData.error}`);
+		}
+	} catch (err) {
+		console.error("Signup error:", err);
+	}
+}
 
 //#endregion

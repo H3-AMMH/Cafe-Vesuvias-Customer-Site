@@ -66,6 +66,11 @@ body {
     }
 }
 
+.nav-link-left {
+    right: auto;
+    left: 2vw;
+}
+
 h1 {
     text-align: center;
     padding: 0%;
